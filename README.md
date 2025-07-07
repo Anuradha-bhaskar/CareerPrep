@@ -1,11 +1,12 @@
 # Career Prep
 
-A Python project using UV for dependency management.
+An AI-powered Career Guidance and Interview Preparation Platform designed to assist job seekers throughout their career journey — from resume improvement to real-time interview practice. The goal is to provide personalized, intelligent support that enhances a user's employability and confidence.
 
 ## Prerequisites
 
 - Python 3.x
 - UV (Python package manager)
+- Node.js
 
 ## Installation
 
