@@ -9,28 +9,36 @@ A Python project using UV for dependency management.
 
 ## Installation
 
-1. Clone the repository:
+Clone the repository:
 ```bash
 git clone <repository-url>
+```
+### For backend
+
+```bash
 cd backend
 ```
 
-2. Install UV if you haven't already:
+1. Install UV if you haven't already:
 ```bash
 pip install uv
 ```
 
-3. Create and activate a virtual environment:
+2. Create and activate a virtual environment:
 ```bash
 uv sync
 ```
 
-## Running the Project
-
-4. Run the main application:
+3. Run the main application:
 ```bash
 uv run main.py
 ```
 
+### For frontend
 
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
