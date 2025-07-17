@@ -1,4 +1,3 @@
-"use client";
 
 import { useState } from "react";
 import { useUser, UserButton } from "@clerk/clerk-react";
