@@ -16,7 +16,7 @@ class User(Base):
     email = Column(String, unique=True, nullable=False)
     username = Column(String, unique=True, nullable=False)
     name = Column(String)
-    password = Column(String, nullable=False)
+    password = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     performances = relationship("Performance", back_populates="user")
