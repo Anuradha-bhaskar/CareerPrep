@@ -108,8 +108,8 @@ class ResumeProcessor:
             Return only the JSON without any explanation.
             """
 
-            # Initialize Gemini model
-            model = self.ai_client.GenerativeModel('gemini-1.5-flash')
+            # Initialize Gemini model properly
+            model = self.ai_client.GenerativeModel('gemini-2.0-flash')
 
             # Configure the model for JSON output
             generation_config = {
@@ -127,11 +127,13 @@ class ResumeProcessor:
 
             # Extract and parse JSON from response
             response_text = response.text
+            print(f"AI Response received, length: {len(response_text)}")
 
             # Handle potential text wrapping around the JSON
             try:
                 # Try to parse directly
                 self.structured_data = json.loads(response_text)
+                print(f"Successfully parsed resume data with {len(self.structured_data)} fields")
             except json.JSONDecodeError:
                 # If failed, try to extract JSON part using regex
                 import re
@@ -139,8 +141,9 @@ class ResumeProcessor:
                 if json_match:
                     try:
                         self.structured_data = json.loads(json_match.group(0))
+                        print(f"Successfully parsed resume data from regex match with {len(self.structured_data)} fields")
                     except json.JSONDecodeError:
-                        print("Failed to parse JSON from response")
+                        print("Failed to parse JSON from response even after regex extraction")
                         return {}
                 else:
                     print("No JSON content found in response")
@@ -204,7 +207,7 @@ class ResumeProcessor:
             """
 
             # Initialize Gemini model
-            model = self.ai_client.GenerativeModel('gemini-1.5-flash')
+            model = self.ai_client.GenerativeModel('gemini-2.0-flash')
 
             # Generate summary
             response = model.generate_content(prompt)

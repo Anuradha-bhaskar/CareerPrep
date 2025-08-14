@@ -89,7 +89,7 @@ class RecommendationEngine:
             """
 
             # Initialize Gemini model with a preference for structured output
-            model = self.ai_client.GenerativeModel('gemini-1.5-flash')
+            model = self.ai_client.GenerativeModel('gemini-2.0-flash')
 
             # Configure the model for more structured output
             generation_config = {

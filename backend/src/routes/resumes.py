@@ -138,14 +138,17 @@ async def upload_resume_file(
                 pass
         raise HTTPException(status_code=500, detail=f"Error saving resume: {str(e)}")
 
-@router.get("/{resume_id}/download")
-async def download_resume(
+
+
+
+@router.get("/{resume_id}/tips")
+async def get_resume_tips(
     request: Request,
     resume_id: str,
     db: Session = Depends(get_db)
 ):
     """
-    Download a resume file by resume ID.
+    Get AI-powered resume improvement tips for a specific resume.
     """
     # Authenticate user
     user_info = authenticate_and_get_user_details(request)
@@ -160,66 +163,140 @@ async def download_resume(
     if resume.user_id != user_id:
         raise HTTPException(status_code=403, detail="Access denied")
     
-    # Check if file exists
-    file_path = Path(resume.file_url)
-    if not file_path.exists():
-        raise HTTPException(status_code=404, detail="Resume file not found")
-    
-    # Get original filename from the stored filename
-    original_filename = "_".join(file_path.name.split("_")[3:])  # Remove user_id and uuid prefix
-    
-    return FileResponse(
-        path=str(file_path),
-        filename=original_filename,
-        media_type='application/octet-stream'
-    )
+    try:
+        # Import the functions module to get resume tips
+        try:
+            from src.services import functions
+        except ImportError:
+            print("Functions module not available, using fallback tips")
+            return {
+                "success": True,
+                "resume_id": resume_id,
+                "tips": _get_fallback_resume_tips()
+            }
+        
+        # Get the resume file path
+        resume_path = Path(resume.file_url)
+        if not resume_path.exists():
+            raise HTTPException(status_code=404, detail="Resume file not found")
+        
+        # Initialize the functions module for resume analysis
+        try:
+            # Extract text from resume
+            resume_text = ""
+            if resume_path.suffix.lower() == '.pdf':
+                resume_text = functions.extract_text_from_pdf(str(resume_path))
+            elif resume_path.suffix.lower() in ['.png', '.jpg', '.jpeg']:
+                resume_text = functions.extract_text_from_image(str(resume_path))
+            
+            # Initialize with basic data
+            analysis = {}
+            dummy_career_paths = []
+            skill_keywords = [
+                "python", "java", "javascript", "html", "css", "react", "node.js",
+                "sql", "mysql", "postgresql", "mongodb", "aws", "azure", "docker",
+                "machine learning", "data science", "project management", "leadership"
+            ]
+            
+            # Initialize the functions module
+            functions.initialize(
+                str(resume_path), 
+                resume_text, 
+                analysis, 
+                dummy_career_paths, 
+                skill_keywords, 
+                user_id
+            )
+            
+            # Analyze the resume
+            functions.analyze_resume()
+            
+        except Exception as e:
+            print(f"Error initializing functions module: {e}")
+        
+        # Get resume tips
+        try:
+            (structure_tips, content_improvement_tips, tech_and_soft_skill_tips, 
+             experience_tips, achievement_tips, ats_tips, modern_tips, tailoring_tips) = functions.provide_resume_tips()
+            
+            return {
+                "success": True,
+                "resume_id": resume_id,
+                "tips": {
+                    "structure_tips": structure_tips,
+                    "content_improvement_tips": content_improvement_tips,
+                    "tech_and_soft_skill_tips": tech_and_soft_skill_tips,
+                    "experience_tips": experience_tips,
+                    "achievement_tips": achievement_tips,
+                    "ats_tips": ats_tips,
+                    "modern_tips": modern_tips,
+                    "tailoring_tips": tailoring_tips
+                }
+            }
+            
+        except Exception as e:
+            print(f"Error getting resume tips: {e}")
+            # Return fallback tips
+            return {
+                "success": True,
+                "resume_id": resume_id,
+                "tips": _get_fallback_resume_tips()
+            }
+        
+    except Exception as e:
+        print(f"Error generating resume tips: {e}")
+        raise HTTPException(status_code=500, detail=f"Error generating tips: {str(e)}")
 
 
-
-
-@router.post("/{resume_id}/analysis", response_model=schemas.ResumeResponse)
-def save_resume_analysis(
-    request: Request,
-    resume_id: str,
-    analysis: dict,
-    db: Session = Depends(get_db)
-):
-    """
-    Save AI-generated analysis for a resume.
-    """
-    authenticate_and_get_user_details(request)  # Just to verify
-
-    return crud.update_resume_analysis(db, resume_id, analysis)
-
-
-@router.get("/", response_model=list[schemas.ResumeResponse])
-def list_resumes(
-    request: Request,
-    db: Session = Depends(get_db)
-):
-    """
-    Get all resumes for the authenticated user.
-    """
-    user_info = authenticate_and_get_user_details(request)
-    user_id = user_info['user_id']
-
-    return crud.get_resumes_by_user(db, user_id)
-
-
-@router.get("/career-roadmap", response_model=schemas.SessionSummaryResponse)
-def get_career_roadmap(
-    request: Request,
-    db: Session = Depends(get_db)
-):
-    """
-    Return the user's personalized career roadmap (AI generated).
-    """
-    user_info = authenticate_and_get_user_details(request)
-    user_id = user_info['user_id']
-
-    # For now, get the latest summary — adjust as needed
-    summaries = crud.get_user_performance(db, user_id)
-    if not summaries:
-        raise HTTPException(status_code=404, detail="No roadmap found")
-
-    return summaries[-1]  # Example: just return last one
+def _get_fallback_resume_tips():
+    """Return fallback resume tips when AI analysis is not available."""
+    return {
+        "structure_tips": [
+            "Use a clean, professional layout with consistent formatting",
+            "Include clear section headers (Summary, Experience, Education, Skills)",
+            "Keep your resume to 1-2 pages maximum",
+            "Use bullet points for easy readability"
+        ],
+        "content_improvement_tips": [
+            "Start with a compelling professional summary",
+            "Use action verbs to describe your accomplishments",
+            "Quantify your achievements with specific numbers and metrics",
+            "Tailor your content to match the job description"
+        ],
+        "tech_and_soft_skill_tips": [
+            "List relevant technical skills prominently",
+            "Include both hard and soft skills",
+            "Use industry-standard terminology",
+            "Highlight skills that match the job requirements"
+        ],
+        "experience_tips": [
+            "List experience in reverse chronological order",
+            "Focus on achievements rather than just responsibilities",
+            "Use the STAR method (Situation, Task, Action, Result)",
+            "Include relevant internships and volunteer work"
+        ],
+        "achievement_tips": [
+            "Quantify your accomplishments with specific metrics",
+            "Highlight awards, recognitions, and certifications",
+            "Show progression and growth in your career",
+            "Include relevant projects and their outcomes"
+        ],
+        "ats_tips": [
+            "Use standard section headings that ATS can recognize",
+            "Include relevant keywords from the job posting",
+            "Avoid complex formatting, tables, and graphics",
+            "Save your resume in both PDF and Word formats"
+        ],
+        "modern_tips": [
+            "Include a link to your LinkedIn profile",
+            "Consider adding a portfolio or personal website",
+            "Use a modern, clean font (Arial, Calibri, or similar)",
+            "Ensure your contact information is up to date"
+        ],
+        "tailoring_tips": [
+            "Customize your resume for each job application",
+            "Research the company and include relevant keywords",
+            "Emphasize skills and experience most relevant to the role",
+            "Write a targeted professional summary for each application"
+        ]
+    }

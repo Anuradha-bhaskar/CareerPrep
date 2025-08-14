@@ -2,6 +2,7 @@
 import { useState, useRef } from "react"
 import { UploadCloud, FileText, CheckCircle, XCircle } from "lucide-react"
 import { useAuth } from "@clerk/clerk-react"
+import { useNavigate } from "react-router-dom"
 
 export default function ResumeAnalyserContent() {
   const [selectedFile, setSelectedFile] = useState(null)
@@ -10,6 +11,7 @@ export default function ResumeAnalyserContent() {
   const [uploadError, setUploadError] = useState(null)
   const fileInputRef = useRef(null)
   const { getToken, isSignedIn } = useAuth()
+  const navigate = useNavigate()
 
   const handleFileChange = (event) => {
     const file = event.target.files[0]
@@ -75,6 +77,11 @@ export default function ResumeAnalyserContent() {
       
       setUploadSuccess(true)
       setSelectedFile(null) // Clear selected file after successful upload
+      
+      // Redirect to guidance page after 2 seconds
+      setTimeout(() => {
+        navigate(`/dashboard/resume-analyser/guidance/${result.resume_id}`)
+      }, 2000)
     } catch (err) {
       console.error("Upload error:", err)
       setUploadError(err.message || "Failed to upload file. Please try again.")
@@ -139,7 +146,7 @@ export default function ResumeAnalyserContent() {
       {uploadSuccess && (
         <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2 text-green-800">
           <CheckCircle className="w-5 h-5" />
-          <span>File uploaded successfully!</span>
+          <span>File uploaded successfully! Redirecting to career guidance...</span>
         </div>
       )}
 

@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 # ✅ Always use absolute imports because `src` is your module root
-from src.routes import users, resumes, practice, performance
+from src.routes import users, resumes, practice, performance, career_recommendations
 
 app = FastAPI()
 
@@ -26,3 +26,4 @@ app.include_router(users.router, prefix="/api/users")
 app.include_router(resumes.router, prefix="/api/resumes")
 app.include_router(practice.router, prefix="/api/practice")
 app.include_router(performance.router, prefix="/api/performance")
+app.include_router(career_recommendations.router, prefix="/api/career-recommendations")

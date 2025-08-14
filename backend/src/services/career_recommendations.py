@@ -168,11 +168,14 @@ def get_career_recommendations(ai_client, resume_data: Dict[str, Any], user_prof
         List of dictionaries containing structured career recommendations
     """
     try:
+        print(f"Generating career recommendations with resume data: {len(resume_data)} fields")
+        print(f"Resume data keys: {list(resume_data.keys())}")
+        
         # Generate the prompt
         prompt = generate_improved_career_prompt(resume_data, user_profile)
         
         # Call the LLM
-        recommendation_model = ai_client.GenerativeModel('gemini-1.5-flash')
+        recommendation_model = ai_client.GenerativeModel('gemini-2.0-flash')
         safety_settings = [
             {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
             {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
@@ -185,8 +188,12 @@ def get_career_recommendations(ai_client, resume_data: Dict[str, Any], user_prof
             safety_settings=safety_settings
         )
         
+        print(f"AI response received, length: {len(response.text)}")
+        
         # Parse the response
         recommendations = parse_llm_career_recommendations(response.text)
+        
+        print(f"Parsed {len(recommendations)} career recommendations")
         
         return recommendations
     except Exception as e:

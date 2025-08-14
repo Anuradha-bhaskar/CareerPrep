@@ -4,6 +4,12 @@ import AuthenticationPage from "./auth/AuthenticationPage.jsx";
 import LandingPage from "./pages/Landingpage.jsx";
 import { SignedIn, SignedOut } from "@clerk/clerk-react";
 import DashboardLayout from "./components/DashboardLayout.jsx";
+import ResumeAnalyser from "./pages/Dashboard/ResumeAnalyser.jsx";
+import AIInterview from "./pages/Dashboard/AIInterview.jsx";
+import InterviewReview from "./pages/Dashboard/InterviewReview.jsx";
+import Profile from "./pages/Dashboard/Profile.jsx";
+import CareerGuidance from "./pages/Dashboard/CareerGuidance.jsx";
+import CareerGuidancePage from "./pages/Dashboard/CareerGuidancePage.jsx";
 
 function App() {
   return (
@@ -14,7 +20,7 @@ function App() {
           element={
             <>
               <SignedIn>
-                <Navigate to="/dashboard" replace />
+                <Navigate to="/dashboard/resume-analyser" replace />
               </SignedIn>
               <SignedOut>
                 <LandingPage />
@@ -33,7 +39,15 @@ function App() {
               <DashboardLayout />
             </SignedIn>
           }
-        />
+        >
+          <Route index element={<Navigate to="resume-analyser" replace />} />
+          <Route path="resume-analyser" element={<ResumeAnalyser />} />
+          <Route path="resume-analyser/guidance/:resumeId" element={<CareerGuidancePage />} />
+          <Route path="ai-interview" element={<AIInterview />} />
+          <Route path="interview-review" element={<InterviewReview />} />
+          <Route path="career-guidance" element={<CareerGuidance />} />
+          <Route path="profile" element={<Profile />} />
+        </Route>
       </Routes>
     </ClerkProviderWithRoutes>
   );
