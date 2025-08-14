@@ -71,6 +71,23 @@ def update_resume_analysis(db: Session, resume_id: str, analysis_data: dict):
     db.refresh(resume)
     return resume
 
+def get_resume_by_id(db: Session, resume_id: str):
+    return db.query(models.Resume).filter(models.Resume.id == resume_id).first()
+
+def update_resume_file(db: Session, resume_id: str, file_url: str, file_type: str = None):
+    resume = db.query(models.Resume).filter(models.Resume.id == resume_id).first()
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+    resume.file_url = file_url
+    if file_type:
+        resume.file_type = file_type
+    # Reset analysis data when file is updated
+    resume.text_content = None
+    resume.analysis_data = None
+    db.commit()
+    db.refresh(resume)
+    return resume
+
 # ============================
 # SESSIONS
 # ============================

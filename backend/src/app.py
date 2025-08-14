@@ -2,11 +2,15 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 # ✅ Always use absolute imports because `src` is your module root
 from src.routes import users, resumes, practice, performance
 
 app = FastAPI()
+
+# ✅ Mount static files for uploaded resumes
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # ✅ CORS for cross-origin requests — required if frontend runs on localhost:5173 etc.
 app.add_middleware(

@@ -30,7 +30,7 @@ class UserResponse(BaseModel):
     name: str | None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 
@@ -52,7 +52,7 @@ class ResumeResponse(ResumeBase):
     uploaded_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # ================================
 # Session Schemas
@@ -70,7 +70,7 @@ class SessionResponse(SessionBase):
     session_id: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # ================================
 # Audio Metric Schemas
@@ -92,7 +92,7 @@ class AudioMetricResponse(AudioMetricBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # ================================
 # Posture Metric Schemas
@@ -114,7 +114,7 @@ class PostureMetricResponse(PostureMetricBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # ================================
 # Eye Metric Schemas
@@ -138,7 +138,7 @@ class EyeMetricResponse(EyeMetricBase):
     id: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # ================================
 # Interview Analysis Schemas
@@ -155,7 +155,7 @@ class InterviewAnalysisResponse(InterviewAnalysisBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # ================================
 # Performance (Generic Example)
@@ -165,7 +165,7 @@ class PerformanceResponse(BaseModel):
     user_id: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # ================================
 # Session Summary (Career Roadmap)
@@ -176,4 +176,4 @@ class SessionSummaryResponse(BaseModel):
     summary_text: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True

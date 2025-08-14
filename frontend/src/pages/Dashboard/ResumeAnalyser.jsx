@@ -1,6 +1,7 @@
 
 import { useState, useRef } from "react"
 import { UploadCloud, FileText, CheckCircle, XCircle } from "lucide-react"
+import { useAuth } from "@clerk/clerk-react"
 
 export default function ResumeAnalyserContent() {
   const [selectedFile, setSelectedFile] = useState(null)
@@ -8,6 +9,7 @@ export default function ResumeAnalyserContent() {
   const [uploadSuccess, setUploadSuccess] = useState(false)
   const [uploadError, setUploadError] = useState(null)
   const fileInputRef = useRef(null)
+  const { getToken, isSignedIn } = useAuth()
 
   const handleFileChange = (event) => {
     const file = event.target.files[0]
@@ -43,14 +45,39 @@ export default function ResumeAnalyserContent() {
     setUploadError(null)
 
     try {
-      // Simulate file upload to a backend
-      await new Promise((resolve) => setTimeout(resolve, 2000)) // Simulate 2-second upload
+      // Get the session token from Clerk
+      const token = await getToken()
+      console.log('Got token:', token ? 'Token received' : 'No token')
+      
+      if (!token) {
+        throw new Error('Not authenticated. Please sign in.')
+      }
+      
+      const formData = new FormData()
+      formData.append('file', selectedFile)
 
+      // Make API call to your FastAPI backend
+      const response = await fetch('http://localhost:8000/api/resumes/upload_resume', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || 'Upload failed')
+      }
+
+      const result = await response.json()
+      console.log('Upload successful:', result)
+      
       setUploadSuccess(true)
       setSelectedFile(null) // Clear selected file after successful upload
     } catch (err) {
       console.error("Upload error:", err)
-      setUploadError("Failed to upload file. Please try again.")
+      setUploadError(err.message || "Failed to upload file. Please try again.")
     } finally {
       setUploading(false)
     }
@@ -62,6 +89,12 @@ export default function ResumeAnalyserContent() {
       <p className="text-gray-600 mb-6">
         Upload your resume to get AI-powered insights and recommendations to optimize your resume for ATS systems and recruiters.
       </p>
+      
+      {!isSignedIn && (
+        <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <p className="text-yellow-800">Please sign in to upload your resume.</p>
+        </div>
+      )}
 
       <div
         className="border-2 border-dashed border-purple-300 rounded-xl p-8 text-center bg-purple-50/50 hover:bg-purple-100/50 transition-colors duration-200 cursor-pointer"
@@ -74,7 +107,7 @@ export default function ResumeAnalyserContent() {
           ref={fileInputRef}
           onChange={handleFileChange}
           className="hidden"
-          accept=".pdf,.doc,.docx" // Specify accepted file types
+          accept=".pdf,.doc,.docx,.txt" // Specify accepted file types
         />
         <UploadCloud className="w-12 h-12 mx-auto text-purple-600 mb-4" />
         <p className="text-lg font-semibold text-purple-800 mb-2">Drag & Drop your file here</p>
