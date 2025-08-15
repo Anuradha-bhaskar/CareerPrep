@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from ..database.db import get_db
 from .. import crud, schemas
 from ..utils import authenticate_and_get_user_details
+from ..services.resume.resume_processor import ResumeProcessor
 import google.generativeai as genai
 import os
 from pathlib import Path
@@ -29,6 +30,48 @@ def secure_filename(filename: str) -> str:
     # Replace spaces and special characters
     filename = "".join(c for c in filename if c.isalnum() or c in ('-', '_', '.'))
     return filename
+
+def extract_and_analyze_resume(file_path: str) -> tuple[str, dict]:
+    """Extract text and analyze resume using ResumeProcessor"""
+    try:
+        # Configure Google AI
+        genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+        
+        # Initialize resume processor
+        resume_processor = ResumeProcessor(genai)
+        
+        # Process the resume file
+        analysis_data = resume_processor.process_resume(file_path)
+        
+        # Get the extracted text
+        extracted_text = resume_processor.extracted_text
+        
+        return extracted_text, analysis_data
+        
+    except Exception as e:
+        print(f"Error processing resume: {e}")
+        # If processing fails, try to extract text manually based on file type
+        file_ext = Path(file_path).suffix.lower()
+        extracted_text = ""
+        
+        if file_ext == '.pdf':
+            try:
+                import PyPDF2
+                with open(file_path, 'rb') as f:
+                    reader = PyPDF2.PdfReader(f)
+                    for page in reader.pages:
+                        extracted_text += page.extract_text() or ""
+            except Exception as pdf_error:
+                print(f"PDF extraction failed: {pdf_error}")
+                
+        elif file_ext in ['.txt']:
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    extracted_text = f.read()
+            except Exception as txt_error:
+                print(f"Text extraction failed: {txt_error}")
+        
+        return extracted_text, {}
 
 @router.post("/upload_resume")
 async def upload_resume_file(
@@ -78,6 +121,15 @@ async def upload_resume_file(
         # Create relative path for database storage
         relative_path = f"{UPLOAD_FOLDER}/{unique_filename}"
         
+        # Extract text and analyze resume
+        try:
+            extracted_text, analysis_data = extract_and_analyze_resume(str(file_path))
+            print(f"Successfully extracted {len(extracted_text)} characters from resume")
+        except Exception as e:
+            print(f"Warning: Could not extract text from resume: {e}")
+            extracted_text = ""
+            analysis_data = {}
+        
         # Check if user already has a resume
         existing_resumes = crud.get_resumes_by_user(db, user_id)
         
@@ -95,11 +147,11 @@ async def upload_resume_file(
                 except OSError:
                     pass  # File might not exist or be in use
             
-            # Update the existing resume record
+            # Update the existing resume record with extracted text and analysis
             existing_resume.file_url = relative_path
             existing_resume.file_type = file_type
-            existing_resume.text_content = None  # Reset for new file
-            existing_resume.analysis_data = None  # Reset for new file
+            existing_resume.text_content = extracted_text
+            existing_resume.analysis_data = analysis_data
             db.commit()
             db.refresh(existing_resume)
             
@@ -107,17 +159,19 @@ async def upload_resume_file(
                 "message": "Resume updated successfully",
                 "resume_id": existing_resume.id,
                 "file_url": relative_path,
-                "filename": unique_filename
+                "filename": unique_filename,
+                "text_extracted": len(extracted_text) > 0,
+                "analysis_completed": len(analysis_data) > 0
             }
         else:
-            # Create new resume record
+            # Create new resume record with extracted text and analysis
             resume_data = schemas.ResumeCreate(
                 user_id=user_id,
                 file_url=relative_path,
                 file_type=file_type,
-                text_content=None,
-                skills=None,
-                analysis_data=None
+                text_content=extracted_text,
+                skills=analysis_data.get('skills', None),
+                analysis_data=analysis_data
             )
             
             new_resume = crud.create_resume(db, resume_data)
@@ -126,7 +180,9 @@ async def upload_resume_file(
                 "message": "Resume uploaded successfully",
                 "resume_id": new_resume.id,
                 "file_url": relative_path,
-                "filename": unique_filename
+                "filename": unique_filename,
+                "text_extracted": len(extracted_text) > 0,
+                "analysis_completed": len(analysis_data) > 0
             }
             
     except Exception as e:
@@ -139,6 +195,147 @@ async def upload_resume_file(
         raise HTTPException(status_code=500, detail=f"Error saving resume: {str(e)}")
 
 
+@router.get("/")
+async def get_user_resumes(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """
+    Get all resumes for the authenticated user.
+    """
+    # Authenticate user
+    user_info = authenticate_and_get_user_details(request)
+    user_id = user_info['user_id']
+    
+    # Get all resumes for the user
+    resumes = crud.get_resumes_by_user(db, user_id)
+    
+    return {
+        "resumes": [
+            {
+                "resume_id": resume.id,
+                "file_url": resume.file_url,
+                "file_type": resume.file_type,
+                "uploaded_at": resume.uploaded_at,
+                "has_text_content": resume.text_content is not None and len(resume.text_content) > 0,
+                "has_analysis": resume.analysis_data is not None and len(resume.analysis_data) > 0,
+                "text_length": len(resume.text_content) if resume.text_content else 0
+            }
+            for resume in resumes
+        ]
+    }
+
+
+@router.get("/{resume_id}")
+async def get_resume(
+    request: Request,
+    resume_id: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Get resume details including extracted text and analysis data.
+    """
+    # Authenticate user
+    user_info = authenticate_and_get_user_details(request)
+    user_id = user_info['user_id']
+    
+    # Get resume from database
+    resume = crud.get_resume_by_id(db, resume_id)
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+    
+    # Check if the resume belongs to the authenticated user
+    if resume.user_id != user_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    return {
+        "resume_id": resume.id,
+        "file_url": resume.file_url,
+        "file_type": resume.file_type,
+        "text_content": resume.text_content,
+        "skills": resume.skills,
+        "analysis_data": resume.analysis_data,
+        "uploaded_at": resume.uploaded_at
+    }
+
+
+@router.get("/{resume_id}/text")
+async def get_resume_text(
+    request: Request,
+    resume_id: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Get the extracted text content of a resume.
+    """
+    # Authenticate user
+    user_info = authenticate_and_get_user_details(request)
+    user_id = user_info['user_id']
+    
+    # Get resume from database
+    resume = crud.get_resume_by_id(db, resume_id)
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+    
+    # Check if the resume belongs to the authenticated user
+    if resume.user_id != user_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    return {
+        "resume_id": resume.id,
+        "text_content": resume.text_content,
+        "text_length": len(resume.text_content) if resume.text_content else 0,
+        "has_text": resume.text_content is not None and len(resume.text_content) > 0
+    }
+
+
+@router.post("/{resume_id}/reprocess")
+async def reprocess_resume(
+    request: Request,
+    resume_id: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Reprocess an existing resume to extract text and analysis.
+    """
+    # Authenticate user
+    user_info = authenticate_and_get_user_details(request)
+    user_id = user_info['user_id']
+    
+    # Get resume from database
+    resume = crud.get_resume_by_id(db, resume_id)
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+    
+    # Check if the resume belongs to the authenticated user
+    if resume.user_id != user_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Check if file exists
+    file_path = Path(resume.file_url)
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Resume file not found")
+    
+    try:
+        # Extract text and analyze resume
+        extracted_text, analysis_data = extract_and_analyze_resume(str(file_path))
+        
+        # Update the resume with extracted text and analysis
+        updated_resume = crud.update_resume_text_content(
+            db, resume_id, extracted_text, analysis_data
+        )
+        
+        return {
+            "message": "Resume reprocessed successfully",
+            "resume_id": resume_id,
+            "text_extracted": len(extracted_text) > 0,
+            "analysis_completed": len(analysis_data) > 0,
+            "text_length": len(extracted_text),
+            "analysis_fields": list(analysis_data.keys()) if analysis_data else []
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error reprocessing resume: {str(e)}")
 
 
 @router.get("/{resume_id}/tips")
@@ -175,22 +372,53 @@ async def get_resume_tips(
                 "tips": _get_fallback_resume_tips()
             }
         
-        # Get the resume file path
-        resume_path = Path(resume.file_url)
-        if not resume_path.exists():
-            raise HTTPException(status_code=404, detail="Resume file not found")
+        # Use stored text content if available, otherwise extract from file
+        resume_text = resume.text_content
+        
+        if not resume_text:
+            # If no stored text, try to extract from file
+            resume_path = Path(resume.file_url)
+            if not resume_path.exists():
+                raise HTTPException(status_code=404, detail="Resume file not found")
+            
+            try:
+                resume_text, analysis_data = extract_and_analyze_resume(str(resume_path))
+                
+                # Update the resume with extracted text and analysis
+                if resume_text:
+                    crud.update_resume_text_content(db, resume_id, resume_text, analysis_data)
+                    
+            except Exception as e:
+                print(f"Error extracting text from resume file: {e}")
+                # Fall back to basic extraction methods
+                if resume_path.suffix.lower() == '.pdf':
+                    try:
+                        import PyPDF2
+                        with open(resume_path, 'rb') as f:
+                            reader = PyPDF2.PdfReader(f)
+                            for page in reader.pages:
+                                resume_text += page.extract_text() or ""
+                    except Exception:
+                        pass
+                elif resume_path.suffix.lower() in ['.txt']:
+                    try:
+                        with open(resume_path, 'r', encoding='utf-8') as f:
+                            resume_text = f.read()
+                    except Exception:
+                        pass
+        
+        if not resume_text:
+            print("No resume text available for analysis")
+            return {
+                "success": True,
+                "resume_id": resume_id,
+                "tips": _get_fallback_resume_tips()
+            }
         
         # Initialize the functions module for resume analysis
         try:
-            # Extract text from resume
-            resume_text = ""
-            if resume_path.suffix.lower() == '.pdf':
-                resume_text = functions.extract_text_from_pdf(str(resume_path))
-            elif resume_path.suffix.lower() in ['.png', '.jpg', '.jpeg']:
-                resume_text = functions.extract_text_from_image(str(resume_path))
-            
-            # Initialize with basic data
-            analysis = {}
+            # Use stored analysis data if available, otherwise create empty
+            analysis = resume.analysis_data or {}
             dummy_career_paths = []
             skill_keywords = [
                 "python", "java", "javascript", "html", "css", "react", "node.js",
@@ -200,7 +428,7 @@ async def get_resume_tips(
             
             # Initialize the functions module
             functions.initialize(
-                str(resume_path), 
+                resume.file_url, 
                 resume_text, 
                 analysis, 
                 dummy_career_paths, 
@@ -208,8 +436,9 @@ async def get_resume_tips(
                 user_id
             )
             
-            # Analyze the resume
-            functions.analyze_resume()
+            # Analyze the resume if not already done
+            if not analysis:
+                functions.analyze_resume()
             
         except Exception as e:
             print(f"Error initializing functions module: {e}")

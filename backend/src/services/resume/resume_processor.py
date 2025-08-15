@@ -5,7 +5,7 @@ from PIL import Image
 import re
 import json
 from typing import Dict
-from ..utils import ensure_directory
+from ...utils import ensure_directory
 # Import PyPDF2
 try:
     from PyPDF2 import PdfReader

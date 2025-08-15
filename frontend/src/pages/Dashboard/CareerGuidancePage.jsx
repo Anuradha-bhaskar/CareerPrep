@@ -12,7 +12,8 @@ import {
   Clock,
   Star,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  XCircle
 } from "lucide-react"
 
 export default function CareerGuidancePage() {
@@ -28,6 +29,8 @@ export default function CareerGuidancePage() {
   const [roadmap, setRoadmap] = useState(null)
   const [roadmapLoading, setRoadmapLoading] = useState(false)
   const [expandedTipsSections, setExpandedTipsSections] = useState({})
+  const [tipsLoading, setTipsLoading] = useState(false)
+  const [tipsError, setTipsError] = useState(null)
 
   useEffect(() => {
     const fetchCareerGuidance = async () => {
@@ -54,23 +57,6 @@ export default function CareerGuidancePage() {
         const careerData = await careerResponse.json()
         setCareerRecommendations(careerData.career_recommendations || [])
 
-        // Fetch resume tips
-        const tipsResponse = await fetch(
-          `http://localhost:8000/api/resumes/${resumeId}/tips`,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            }
-          }
-        )
-
-        if (!tipsResponse.ok) {
-          throw new Error('Failed to fetch resume tips')
-        }
-
-        const tipsData = await tipsResponse.json()
-        setResumeTips(tipsData.tips || {})
-
       } catch (err) {
         console.error('Error fetching career guidance:', err)
         setError(err.message)
@@ -83,6 +69,40 @@ export default function CareerGuidancePage() {
       fetchCareerGuidance()
     }
   }, [resumeId, getToken])
+
+  const fetchResumeTips = async () => {
+    setTipsLoading(true)
+    setTipsError(null)
+    try {
+      const token = await getToken()
+      if (!token) {
+        throw new Error('Not authenticated')
+      }
+
+      // Fetch resume tips
+      const tipsResponse = await fetch(
+        `http://localhost:8000/api/resumes/${resumeId}/tips`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          }
+        }
+      )
+
+      if (!tipsResponse.ok) {
+        throw new Error('Failed to fetch resume tips')
+      }
+
+      const tipsData = await tipsResponse.json()
+      setResumeTips(tipsData.tips || {})
+
+    } catch (err) {
+      console.error('Error fetching resume tips:', err)
+      setTipsError(err.message)
+    } finally {
+      setTipsLoading(false)
+    }
+  }
 
   const fetchRoadmap = async (careerTitle, skillsNeeded) => {
     setRoadmapLoading(true)
@@ -399,18 +419,47 @@ export default function CareerGuidancePage() {
       )}
 
       {/* Resume Tips */}
-      {resumeTips && (
-        <div className="space-y-6">
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-green-100 rounded-lg">
               <Target className="w-6 h-6 text-green-600" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-800">Resume Improvement Tips</h2>
-              <p className="text-sm text-gray-600">Enhance your resume to stand out</p>
+              <p className="text-sm text-gray-600">Get AI-powered suggestions to enhance your resume</p>
             </div>
           </div>
           
+          {!resumeTips && (
+            <button
+              onClick={fetchResumeTips}
+              disabled={tipsLoading}
+              className="bg-green-600 text-white px-6 py-2 rounded-lg shadow-md hover:bg-green-700 disabled:bg-green-400 disabled:cursor-not-allowed transition-colors duration-200 flex items-center gap-2"
+            >
+              {tipsLoading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Loading Tips...</span>
+                </>
+              ) : (
+                <>
+                  <Target className="w-4 h-4" />
+                  <span>Get Tips</span>
+                </>
+              )}
+            </button>
+          )}
+        </div>
+        
+        {tipsError && (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-800">
+            <XCircle className="w-5 h-5" />
+            <span>{tipsError}</span>
+          </div>
+        )}
+        
+        {resumeTips && (
           <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
             {Object.entries(resumeTips).map(([section, tips]) => (
               <div key={section} className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow">
@@ -449,8 +498,8 @@ export default function CareerGuidancePage() {
               </div>
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }

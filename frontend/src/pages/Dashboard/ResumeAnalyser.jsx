@@ -157,10 +157,7 @@ export default function ResumeAnalyserContent() {
         </div>
       )}
 
-      <div className="mt-8">
-        <h4 className="text-xl font-semibold text-gray-800 mb-3">Recent Analyses</h4>
-        <p className="text-gray-500 text-sm">No recent analyses found.</p>
-      </div>
+    
     </div>
   )
 }

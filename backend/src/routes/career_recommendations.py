@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from ..database.db import get_db
 from .. import crud, schemas
 from ..utils import authenticate_and_get_user_details
-from ..services.career_recommendations import get_career_recommendations
+from ..services.resume.career_recommendations import get_career_recommendations
 import os
 import re
 import json
@@ -57,7 +57,7 @@ async def generate_career_recommendations(
         
         # Process resume using ResumeProcessor
         try:
-            from ..services.resume_processor import ResumeProcessor
+            from ..services.resume.resume_processor import ResumeProcessor
             resume_processor = ResumeProcessor(ai_client=ai_client)
             resume_data = resume_processor.process_resume(str(resume_path))
             print(f"Resume processing successful. Extracted data keys: {list(resume_data.keys())}")

@@ -1,7 +1,7 @@
 # schemas.py
 
 from pydantic import BaseModel, EmailStr
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Any
 from datetime import datetime
 
 # ================================
@@ -177,3 +177,47 @@ class SessionSummaryResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# Pydantic models for request/response
+class StartInterviewRequest(BaseModel):
+    message: Optional[str] = None
+
+class InterviewResponse(BaseModel):
+    type: str
+    content: str
+    button_text: Optional[str] = None
+
+# ================================
+# Image Processing Schemas
+# ================================
+class ImageProcessRequest(BaseModel):
+    image: str  # Base64 encoded image
+    savePrediction: Optional[bool] = False
+
+class ImageProcessResponse(BaseModel):
+    success: bool
+    annotated_image_base64: Optional[str] = None
+    prediction: Optional[str] = None
+    probability: Optional[float] = None
+    error: Optional[str] = None
+
+class EmotionStatsResponse(BaseModel):
+    success: bool
+    emotion_counts: Optional[Dict[str, int]] = None
+    emotion_percentages: Optional[Dict[str, float]] = None
+    total_detections: Optional[int] = None
+    error: Optional[str] = None
+
+# ================================
+# Video Analysis Schemas
+# ================================
+class VideoAnalysisResponse(BaseModel):
+    success: bool
+    message: Optional[str] = None
+    error: Optional[str] = None
+
+class VideoMetricsResponse(BaseModel):
+    success: bool
+    metrics: Optional[Dict[str, Any]] = None
+    error: Optional[str] = None

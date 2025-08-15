@@ -32,7 +32,7 @@ uv sync
 
 3. Run the main application:
 ```bash
-uv run main.py
+python server.py
 ```
 
 ### For frontend

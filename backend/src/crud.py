@@ -71,6 +71,21 @@ def update_resume_analysis(db: Session, resume_id: str, analysis_data: dict):
     db.refresh(resume)
     return resume
 
+def update_resume_text_content(db: Session, resume_id: str, text_content: str, analysis_data: dict = None):
+    """Update resume text content and optionally analysis data"""
+    resume = db.query(models.Resume).filter(models.Resume.id == resume_id).first()
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+    resume.text_content = text_content
+    if analysis_data is not None:
+        resume.analysis_data = analysis_data
+        # Extract skills if available
+        if 'skills' in analysis_data:
+            resume.skills = analysis_data['skills']
+    db.commit()
+    db.refresh(resume)
+    return resume
+
 def get_resume_by_id(db: Session, resume_id: str):
     return db.query(models.Resume).filter(models.Resume.id == resume_id).first()
 
