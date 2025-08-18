@@ -1,0 +1,19 @@
+{
+  "conversation": [
+    {
+      "role": "interviewer",
+      "content": "\"Hi Anand, welcome! Thanks for coming in today.  It's great to finally meet you. I've reviewed your resume and I'm impressed with your projects, especially the Java-based Digital Mall and the GameZork platform.  Your skills in Java, React, and various front-end technologies are very relevant to the positions we have available.\n\nTo get started, could you please tell me a little bit about yourself?  I'd love to hear about your background, your experience with these technologies, and what specifically interests you about this opportunity.\"\n",
+      "timestamp": 1755472563.2365203
+    },
+    {
+      "role": "interviewer",
+      "content": "Anand, thank you so much for taking the time to speak with me today.  I've truly appreciated learning more about your experience and skills; you've provided us with some valuable insights.  The team will be reviewing all applications, and we'll be in touch regarding the next steps in the hiring process within [ timeframe, e.g., the next week].  We appreciate your interest in [Company Name].  Have a wonderful day.\n",
+      "timestamp": 1755472891.4211469
+    },
+    {
+      "role": "interviewer",
+      "content": "Anand, thank you so much for taking the time to speak with me today.  I've gained valuable insights into your experience and skills, and I appreciate you sharing your background with us.  The team will be reviewing all applications, and we will be in touch regarding the next steps in the hiring process within [ timeframe, e.g., the next week ].  Thank you again, and have a wonderful day.\n",
+      "timestamp": 1755472895.3789642
+    }
+  ]
+}

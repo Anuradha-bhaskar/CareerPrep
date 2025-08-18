@@ -1,0 +1,19 @@
+{
+  "conversation": [
+    {
+      "role": "interviewer",
+      "content": "\"Hi Anand, welcome!  It's great to finally meet you. Thanks for taking the time to interview today.  I've reviewed your resume and I'm particularly impressed with your projects, especially the Java-based Digital Mall system and your GameZork platform \u2013 those demonstrate a nice range of skills.\n\nTo get us started, could you please tell me a little bit about yourself, your background, and what kind of role you're hoping to find?\"\n",
+      "timestamp": 1755473661.8831773
+    },
+    {
+      "role": "candidate",
+      "content": "j",
+      "timestamp": 1755473673.748583
+    },
+    {
+      "role": "interviewer",
+      "content": "Okay, Anand,  your Digital Mall project mentions using Java and MySQL.  Can you describe a specific challenge you encountered during its development and how you overcame it?\n",
+      "timestamp": 1755473675.8358037
+    }
+  ]
+}

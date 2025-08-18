@@ -16,7 +16,7 @@ import shutil
 router = APIRouter()
 
 # Configuration for file uploads
-UPLOAD_FOLDER = "static/uploads"
+UPLOAD_FOLDER = "static/upload"
 ALLOWED_EXTENSIONS = {'.pdf', '.doc', '.docx', '.txt'}
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 
@@ -125,6 +125,8 @@ async def upload_resume_file(
         try:
             extracted_text, analysis_data = extract_and_analyze_resume(str(file_path))
             print(f"Successfully extracted {len(extracted_text)} characters from resume")
+            print(f"Analysis data type: {type(analysis_data)}")
+            print(f"Analysis data: {analysis_data}")
         except Exception as e:
             print(f"Warning: Could not extract text from resume: {e}")
             extracted_text = ""
@@ -151,7 +153,23 @@ async def upload_resume_file(
             existing_resume.file_url = relative_path
             existing_resume.file_type = file_type
             existing_resume.text_content = extracted_text
-            existing_resume.analysis_data = analysis_data
+            
+            # Ensure analysis_data is a dictionary before assigning
+            if isinstance(analysis_data, dict):
+                existing_resume.analysis_data = analysis_data
+                # Extract skills if available and ensure it's JSON-serializable
+                if 'skills' in analysis_data:
+                    skills = analysis_data['skills']
+                    if isinstance(skills, (list, dict, str, int, float, bool)):
+                        existing_resume.skills = skills
+                    else:
+                        print(f"Warning: skills is not a JSON-serializable type: {type(skills)}")
+                        existing_resume.skills = None
+            else:
+                print(f"Warning: analysis_data is not a dict for update, it's {type(analysis_data)}")
+                existing_resume.analysis_data = {}
+                existing_resume.skills = None
+            
             db.commit()
             db.refresh(existing_resume)
             
@@ -165,14 +183,40 @@ async def upload_resume_file(
             }
         else:
             # Create new resume record with extracted text and analysis
-            resume_data = schemas.ResumeCreate(
-                user_id=user_id,
-                file_url=relative_path,
-                file_type=file_type,
-                text_content=extracted_text,
-                skills=analysis_data.get('skills', None),
-                analysis_data=analysis_data
-            )
+            # Ensure analysis_data is a dictionary and extract skills safely
+            if isinstance(analysis_data, dict):
+                skills = analysis_data.get('skills', None)
+                # Ensure skills is a valid format for JSON storage
+                if skills is not None and not isinstance(skills, (list, dict, str, int, float, bool)):
+                    print(f"Warning: skills is not a JSON-serializable type: {type(skills)}")
+                    skills = None
+            else:
+                print(f"Warning: analysis_data is not a dict, it's {type(analysis_data)}")
+                skills = None
+                analysis_data = {} if analysis_data is None else {}
+            
+            # Ensure all data is properly formatted for database storage
+            try:
+                resume_data = schemas.ResumeCreate(
+                    user_id=user_id,
+                    file_url=relative_path,
+                    file_type=file_type,
+                    text_content=extracted_text,
+                    skills=skills,
+                    analysis_data=analysis_data
+                )
+                print(f"Successfully created ResumeCreate schema object")
+            except Exception as schema_error:
+                print(f"Error creating ResumeCreate schema: {schema_error}")
+                # Fallback to minimal data
+                resume_data = schemas.ResumeCreate(
+                    user_id=user_id,
+                    file_url=relative_path,
+                    file_type=file_type,
+                    text_content=extracted_text,
+                    skills=None,
+                    analysis_data={}
+                )
             
             new_resume = crud.create_resume(db, resume_data)
             

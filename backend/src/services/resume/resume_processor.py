@@ -132,16 +132,47 @@ class ResumeProcessor:
             # Handle potential text wrapping around the JSON
             try:
                 # Try to parse directly
-                self.structured_data = json.loads(response_text)
-                print(f"Successfully parsed resume data with {len(self.structured_data)} fields")
+                parsed_data = json.loads(response_text)
+                print(f"Successfully parsed resume data with {len(parsed_data)} fields")
+                
+                # Ensure we have a dictionary, not a list
+                if isinstance(parsed_data, dict):
+                    self.structured_data = parsed_data
+                elif isinstance(parsed_data, list) and len(parsed_data) > 0:
+                    # If it's a list, take the first item if it's a dict, otherwise create a dict
+                    if isinstance(parsed_data[0], dict):
+                        self.structured_data = parsed_data[0]
+                        print("Converted list response to dictionary using first item")
+                    else:
+                        self.structured_data = {"raw_data": parsed_data}
+                        print("Converted list response to dictionary with raw_data key")
+                else:
+                    self.structured_data = {"raw_data": parsed_data}
+                    print("Created dictionary with raw_data key for non-dict response")
+                    
             except json.JSONDecodeError:
                 # If failed, try to extract JSON part using regex
                 import re
                 json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
                 if json_match:
                     try:
-                        self.structured_data = json.loads(json_match.group(0))
-                        print(f"Successfully parsed resume data from regex match with {len(self.structured_data)} fields")
+                        parsed_data = json.loads(json_match.group(0))
+                        print(f"Successfully parsed resume data from regex match with {len(parsed_data)} fields")
+                        
+                        # Apply the same logic for regex-extracted data
+                        if isinstance(parsed_data, dict):
+                            self.structured_data = parsed_data
+                        elif isinstance(parsed_data, list) and len(parsed_data) > 0:
+                            if isinstance(parsed_data[0], dict):
+                                self.structured_data = parsed_data[0]
+                                print("Converted regex-extracted list response to dictionary using first item")
+                            else:
+                                self.structured_data = {"raw_data": parsed_data}
+                                print("Converted regex-extracted list response to dictionary with raw_data key")
+                        else:
+                            self.structured_data = {"raw_data": parsed_data}
+                            print("Created dictionary with raw_data key for regex-extracted non-dict response")
+                            
                     except json.JSONDecodeError:
                         print("Failed to parse JSON from response even after regex extraction")
                         return {}
@@ -179,6 +210,19 @@ class ResumeProcessor:
         if self.extracted_text:
             print(f"Extracted text length: {len(self.extracted_text)}")
             self.structured_data = self.parse_resume_with_ai()
+            
+            # Ensure we always return a dictionary
+            if not isinstance(self.structured_data, dict):
+                print(f"Warning: structured_data is not a dict, it's {type(self.structured_data)}")
+                if isinstance(self.structured_data, list):
+                    self.structured_data = {"raw_data": self.structured_data}
+                else:
+                    self.structured_data = {"raw_data": self.structured_data}
+                print("Converted to dictionary format")
+            
+            print(f"Final structured_data type: {type(self.structured_data)}")
+            print(f"Final structured_data keys: {list(self.structured_data.keys()) if isinstance(self.structured_data, dict) else 'N/A'}")
+            
             # Optionally save structured data
             # save_path = os.path.join("cache/resumes", os.path.basename(file_path) + ".json")
             # save_json_file(self.structured_data, save_path)

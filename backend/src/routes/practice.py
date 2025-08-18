@@ -130,10 +130,30 @@ def start_interview_post(
     user_details = authenticate_and_get_user_details(request)
     user_id = user_details["user_id"]
     
-    # Get user from database
+    # Get user from database, create if doesn't exist
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        # Auto-create user if they don't exist (similar to users.py)
+        email = user_details.get("email")
+        if not email:
+            raise HTTPException(status_code=400, detail="Cannot create user: missing email")
+        
+        name = user_details.get("name") or "No Name"
+        username = email.split('@')[0] if '@' in email else f"user_{user_id[:8]}"
+        
+        new_user = schemas.UserCreate(
+            id=user_id,
+            email=email,
+            username=username,
+            name=name,
+            password=None
+        )
+        try:
+            user = crud.create_user(db, new_user)
+            print(f"[DEBUG] Auto-created user {user_id} in database")
+        except Exception as e:
+            print(f"[DEBUG] Error creating user: {e}")
+            raise HTTPException(status_code=500, detail="Failed to create user account")
     
     # Check if user has uploaded a resume
     user_resume = db.query(Resume).filter(Resume.user_id == user_id).first()
@@ -278,8 +298,61 @@ Keep the feedback professional, encouraging, and helpful.
         else:
             # Otherwise, process the answer normally
             print(f"[DEBUG] Processing answer normally for user {user_id}.")
+            
+            # Save user message to database
+            try:
+                # Get the session ID from active interviews
+                session_id = None
+                for sid, interview in active_interviews.items():
+                    if sid == user_id:
+                        # We need to get the session_id from somewhere - let's store it in the interview instance
+                        session_id = getattr(interview_instance, 'session_id', None)
+                        break
+                
+                if session_id:
+                    # Get the next message order
+                    existing_messages = crud.get_interview_messages_by_session(db, session_id)
+                    next_order = len(existing_messages)
+                    
+                    # Save user message
+                    user_message_data = schemas.InterviewMessageCreate(
+                        session_id=session_id,
+                        speaker="user",
+                        message=user_message,
+                        timestamp=datetime.datetime.now(),
+                        message_order=next_order
+                    )
+                    crud.create_interview_message(db, user_message_data)
+                    
+                    # Update questions answered count
+                    crud.update_interview_session(db, session_id, {"questions_answered": next_order // 2})
+                    
+            except Exception as e:
+                print(f"[DEBUG] Error saving user message: {e}")
+            
             ai_response_text = interview_instance.process_answer(user_message)
             print(f"[DEBUG] Response from process_answer(): {ai_response_text[:100]}...")
+            
+            # Save AI response to database
+            try:
+                if session_id:
+                    existing_messages = crud.get_interview_messages_by_session(db, session_id)
+                    next_order = len(existing_messages)
+                    
+                    ai_message_data = schemas.InterviewMessageCreate(
+                        session_id=session_id,
+                        speaker="ai",
+                        message=ai_response_text,
+                        timestamp=datetime.datetime.now(),
+                        message_order=next_order
+                    )
+                    crud.create_interview_message(db, ai_message_data)
+                    
+                    # Update questions asked count
+                    crud.update_interview_session(db, session_id, {"questions_asked": (next_order + 1) // 2})
+                    
+            except Exception as e:
+                print(f"[DEBUG] Error saving AI response: {e}")
             
             # Check if process_answer itself ended the interview
             if interview_instance.interview_end_time:
@@ -329,12 +402,46 @@ Keep the feedback professional, encouraging, and helpful.
                     
                     if not error_occurred:  # Check the flag
                         print("[DEBUG] No errors during resume processing, proceeding to create Interview instance.")
-                        interview_instance = Interview(ai_client=ai_client, tts_service=tts_service, resume_data=resume_data)
-                        active_interviews[user_id] = interview_instance
-                        # Call start_interview and store the response
-                        ai_response_text = interview_instance.start_interview()
-                        print(f"[DEBUG] Interview started for user {user_id}. First question: {ai_response_text[:100]}...")
-                        response_data = {"type": "text", "content": ai_response_text}
+                        
+                        # Create interview session in database
+                        session_id = f"session_{int(datetime.datetime.now().timestamp())}"
+                        session_data = schemas.InterviewSessionCreate(
+                            user_id=user_id,
+                            session_id=session_id,
+                            start_time=datetime.datetime.now(),
+                            resume_used=user_resume.file_url,
+                            status="active"
+                        )
+                        
+                        try:
+                            db_session = crud.create_interview_session(db, session_data)
+                            print(f"[DEBUG] Created interview session: {session_id}")
+                            
+                            # Create Interview instance and start
+                            interview_instance = Interview(ai_client=ai_client, tts_service=tts_service, resume_data=resume_data)
+                            active_interviews[user_id] = interview_instance
+                            
+                            # Call start_interview and store the response
+                            ai_response_text = interview_instance.start_interview()
+                            print(f"[DEBUG] Interview started for user {user_id}. First question: {ai_response_text[:100]}...")
+                            
+                            # Save AI's first question
+                            first_question_data = schemas.InterviewMessageCreate(
+                                session_id=session_id,
+                                speaker="ai",
+                                message=ai_response_text,
+                                timestamp=datetime.datetime.now(),
+                                message_order=1
+                            )
+                            crud.create_interview_message(db, first_question_data)
+                            
+                            response_data = {"type": "text", "content": ai_response_text, "session_id": session_id}
+                            
+                        except Exception as db_error:
+                            print(f"[DEBUG] Database error creating session: {db_error}")
+                            error_occurred = True
+                            ai_response_text = "Error creating interview session. Please try again."
+                            response_data = {"type": "text", "content": ai_response_text}
                     else:
                         print("[DEBUG] Error occurred during resume processing or file handling, skipping Interview creation.")
                         # Minor improvement: Use specific error message if available
@@ -386,6 +493,37 @@ def process_image(
                 success=False,
                 error='User not logged in'
             )
+        
+        # Ensure user exists in database
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            # Auto-create user if they don't exist
+            email = user_details.get("email")
+            if not email:
+                return schemas.ImageProcessResponse(
+                    success=False,
+                    error='Cannot create user: missing email'
+                )
+            
+            name = user_details.get("name") or "No Name"
+            username = email.split('@')[0] if '@' in email else f"user_{user_id[:8]}"
+            
+            new_user = schemas.UserCreate(
+                id=user_id,
+                email=email,
+                username=username,
+                name=name,
+                password=None
+            )
+            try:
+                user = crud.create_user(db, new_user)
+                print(f"[DEBUG] Auto-created user {user_id} in process_image")
+            except Exception as e:
+                print(f"[DEBUG] Error creating user in process_image: {e}")
+                return schemas.ImageProcessResponse(
+                    success=False,
+                    error='Failed to create user account'
+                )
 
         # Get the image data from the request
         image_base64 = image_data.image
@@ -505,6 +643,37 @@ def emotion_stats(
                 success=False,
                 error='User not logged in'
             )
+        
+        # Ensure user exists in database
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            # Auto-create user if they don't exist
+            email = user_details.get("email")
+            if not email:
+                return schemas.EmotionStatsResponse(
+                    success=False,
+                    error='Cannot create user: missing email'
+                )
+            
+            name = user_details.get("name") or "No Name"
+            username = email.split('@')[0] if '@' in email else f"user_{user_id[:8]}"
+            
+            new_user = schemas.UserCreate(
+                id=user_id,
+                email=email,
+                username=username,
+                name=name,
+                password=None
+            )
+            try:
+                user = crud.create_user(db, new_user)
+                print(f"[DEBUG] Auto-created user {user_id} in emotion-stats")
+            except Exception as e:
+                print(f"[DEBUG] Error creating user in emotion-stats: {e}")
+                return schemas.EmotionStatsResponse(
+                    success=False,
+                    error='Failed to create user account'
+                )
 
         # Get the latest session data (last hour)
         from datetime import timedelta
@@ -571,6 +740,37 @@ def start_video_analysis(
                 success=False,
                 error='User not logged in'
             )
+        
+        # Ensure user exists in database
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            # Auto-create user if they don't exist
+            email = user_details.get("email")
+            if not email:
+                return schemas.VideoAnalysisResponse(
+                    success=False,
+                    error='Cannot create user: missing email'
+                )
+            
+            name = user_details.get("name") or "No Name"
+            username = email.split('@')[0] if '@' in email else f"user_{user_id[:8]}"
+            
+            new_user = schemas.UserCreate(
+                id=user_id,
+                email=email,
+                username=username,
+                name=name,
+                password=None
+            )
+            try:
+                user = crud.create_user(db, new_user)
+                print(f"[DEBUG] Auto-created user {user_id} in start_video_analysis")
+            except Exception as e:
+                print(f"[DEBUG] Error creating user in start_video_analysis: {e}")
+                return schemas.VideoAnalysisResponse(
+                    success=False,
+                    error='Failed to create user account'
+                )
 
         # Initialize the metrics tracker if it doesn't exist
         if metrics_tracker is None:
@@ -610,6 +810,37 @@ def end_video_analysis(
                 success=False,
                 error='User not logged in'
             )
+        
+        # Ensure user exists in database
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            # Auto-create user if they don't exist
+            email = user_details.get("email")
+            if not email:
+                return schemas.VideoAnalysisResponse(
+                    success=False,
+                    error='Cannot create user: missing email'
+                )
+            
+            name = user_details.get("name") or "No Name"
+            username = email.split('@')[0] if '@' in email else f"user_{user_id[:8]}"
+            
+            new_user = schemas.UserCreate(
+                id=user_id,
+                email=email,
+                username=username,
+                name=name,
+                password=None
+            )
+            try:
+                user = crud.create_user(db, new_user)
+                print(f"[DEBUG] Auto-created user {user_id} in end_video_analysis")
+            except Exception as e:
+                print(f"[DEBUG] Error creating user in end_video_analysis: {e}")
+                return schemas.VideoAnalysisResponse(
+                    success=False,
+                    error='Failed to create user account'
+                )
 
         if metrics_tracker is not None:
             # Save final metrics
@@ -681,6 +912,37 @@ def get_video_metrics(
                 success=False,
                 error='User not logged in'
             )
+        
+        # Ensure user exists in database
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            # Auto-create user if they don't exist
+            email = user_details.get("email")
+            if not email:
+                return schemas.VideoMetricsResponse(
+                    success=False,
+                    error='Cannot create user: missing email'
+                )
+            
+            name = user_details.get("name") or "No Name"
+            username = email.split('@')[0] if '@' in email else f"user_{user_id[:8]}"
+            
+            new_user = schemas.UserCreate(
+                id=user_id,
+                email=email,
+                username=username,
+                name=name,
+                password=None
+            )
+            try:
+                user = crud.create_user(db, new_user)
+                print(f"[DEBUG] Auto-created user {user_id} in get_video_metrics")
+            except Exception as e:
+                print(f"[DEBUG] Error creating user in get_video_metrics: {e}")
+                return schemas.VideoMetricsResponse(
+                    success=False,
+                    error='Failed to create user account'
+                )
 
         # Return current metrics if the tracker exists
         if metrics_tracker is not None:
@@ -742,3 +1004,471 @@ def get_video_metrics(
             success=False,
             error=f'Internal server error: {str(e)}'
         )
+
+
+@router.post("/process_video")
+def process_video(
+    request: Request,
+    video_data: dict,
+    db: Session = Depends(get_db)
+):
+    """
+    Process uploaded video for analysis and metrics.
+    """
+    try:
+        # Authenticate user
+        user_details = authenticate_and_get_user_details(request)
+        user_id = user_details.get('user_id')
+        
+        if not user_id:
+            return JSONResponse(
+                status_code=401,
+                content={"success": False, "error": "User not logged in"}
+            )
+        
+        # Ensure user exists in database
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            # Auto-create user if they don't exist
+            email = user_details.get("email")
+            if not email:
+                return JSONResponse(
+                    status_code=400,
+                    content={"success": False, "error": "Cannot create user: missing email"}
+                )
+            
+            name = user_details.get("name") or "No Name"
+            username = email.split('@')[0] if '@' in email else f"user_{user_id[:8]}"
+            
+            new_user = schemas.UserCreate(
+                id=user_id,
+                email=email,
+                username=username,
+                name=name,
+                password=None
+            )
+            try:
+                user = crud.create_user(db, new_user)
+                print(f"[DEBUG] Auto-created user {user_id} in process_video")
+            except Exception as e:
+                print(f"[DEBUG] Error creating user in process_video: {e}")
+                return JSONResponse(
+                    status_code=500,
+                    content={"success": False, "error": "Failed to create user account"}
+                )
+
+        # Extract video data and session ID
+        video_base64 = video_data.get('video_data')
+        session_id = video_data.get('session_id')
+        
+        if not video_base64:
+            return JSONResponse(
+                status_code=400,
+                content={"success": False, "error": "No video data provided"}
+            )
+
+        # Remove the data URL prefix if present
+        if ',' in video_base64:
+            video_base64 = video_base64.split(',')[1]
+
+        # Process the video (this is a simplified version - in production you'd want more sophisticated processing)
+        # For now, we'll just acknowledge receipt and simulate some metrics
+        
+        # Generate some sample metrics for demonstration
+        import random
+        sample_metrics = {
+            "handDetectionCount": random.randint(0, 5),
+            "handDetectionDuration": random.uniform(0, 10),
+            "lossEyeContactCount": random.randint(0, 3),
+            "lookingAwayDuration": random.uniform(0, 5),
+            "badPostureCount": random.randint(0, 2),
+            "badPostureDuration": random.uniform(0, 3)
+        }
+        
+        # Save metrics to database if session_id is provided
+        if session_id:
+            try:
+                eye_metrics = EyeMetric(
+                    user_id=user_id,
+                    session_id=session_id,
+                    hand_detection_count=sample_metrics["handDetectionCount"],
+                    hand_detection_duration=sample_metrics["handDetectionDuration"],
+                    loss_eye_contact_count=sample_metrics["lossEyeContactCount"],
+                    looking_away_duration=sample_metrics["lookingAwayDuration"],
+                    bad_posture_count=sample_metrics["badPostureCount"],
+                    bad_posture_duration=sample_metrics["badPostureDuration"],
+                    is_auto_save=False
+                )
+                db.add(eye_metrics)
+                db.commit()
+                
+                print(f"Video metrics saved for user {user_id}, session {session_id}")
+                
+            except Exception as e:
+                print(f"Error saving video metrics: {e}")
+                db.rollback()
+
+        return JSONResponse(
+            content={
+                "success": True,
+                "message": "Video processed successfully",
+                "metrics": sample_metrics
+            }
+        )
+        
+    except Exception as e:
+        print(f"Error processing video: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": f"Internal server error: {str(e)}"}
+        )
+
+
+@router.get("/emotion-stats", response_model=schemas.EmotionStatsResponse)
+def get_emotion_stats(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """
+    Get emotion detection statistics for the current user.
+    """
+    try:
+        # Authenticate user
+        user_details = authenticate_and_get_user_details(request)
+        user_id = user_details.get('user_id')
+        
+        if not user_id:
+            return schemas.EmotionStatsResponse(
+                success=False,
+                error='User not logged in'
+            )
+        
+        # Ensure user exists in database
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            # Auto-create user if they don't exist
+            email = user_details.get("email")
+            if not email:
+                return schemas.EmotionStatsResponse(
+                    success=False,
+                    error='Cannot create user: missing email'
+                )
+            
+            name = user_details.get("name") or "No Name"
+            username = email.split('@')[0] if '@' in email else f"user_{user_id[:8]}"
+            
+            new_user = schemas.UserCreate(
+                id=user_id,
+                email=email,
+                username=username,
+                name=name,
+                password=None
+            )
+            try:
+                user = crud.create_user(db, new_user)
+                print(f"[DEBUG] Auto-created user {user_id} in emotion-stats")
+            except Exception as e:
+                print(f"[DEBUG] Error creating user in emotion-stats: {e}")
+                return schemas.EmotionStatsResponse(
+                    success=False,
+                    error='Failed to create user account'
+                )
+
+        # Get the latest eye metrics for the user
+        latest_metrics = db.query(EyeMetric).filter(
+            EyeMetric.user_id == user_id,
+            EyeMetric.is_auto_save == False
+        ).order_by(EyeMetric.timestamp.desc()).first()
+
+        if not latest_metrics:
+            return schemas.EmotionStatsResponse(
+                success=False,
+                error='No performance metrics found'
+            )
+
+        # For now, we'll return the eye metrics as emotion stats
+        # In a full implementation, you'd have separate emotion detection data
+        emotion_counts = {
+            "Eye Contact Losses": latest_metrics.loss_eye_contact_count,
+            "Looking Away": 1 if latest_metrics.looking_away_duration > 0 else 0,
+            "Bad Posture": latest_metrics.bad_posture_count,
+            "Hand Movements": latest_metrics.hand_detection_count
+        }
+
+        total_detections = sum(emotion_counts.values())
+        
+        emotion_percentages = {}
+        if total_detections > 0:
+            for emotion, count in emotion_counts.items():
+                emotion_percentages[emotion] = (count / total_detections) * 100
+
+        return schemas.EmotionStatsResponse(
+            success=True,
+            emotion_counts=emotion_counts,
+            emotion_percentages=emotion_percentages,
+            total_detections=total_detections
+        )
+        
+    except Exception as e:
+        print(f"Error getting emotion stats: {e}")
+        return schemas.EmotionStatsResponse(
+            success=False,
+            error=f'Internal server error: {str(e)}'
+        )
+
+@router.get("/interview-history", response_model=schemas.InterviewHistoryResponse)
+def get_interview_history(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """
+    Get interview history for the current user.
+    """
+    try:
+        # Authenticate user
+        user_details = authenticate_and_get_user_details(request)
+        user_id = user_details.get('user_id')
+        
+        if not user_id:
+            return schemas.InterviewHistoryResponse(
+                success=False,
+                interviews=[],
+                total_count=0,
+                error='User not logged in'
+            )
+        
+        # Ensure user exists in database
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            # Auto-create user if they don't exist
+            email = user_details.get("email")
+            if not email:
+                return schemas.InterviewHistoryResponse(
+                    success=False,
+                    interviews=[],
+                    total_count=0,
+                    error='Cannot create user: missing email'
+                )
+            
+            name = user_details.get("name") or "No Name"
+            username = email.split('@')[0] if '@' in email else f"user_{user_id[:8]}"
+            
+            new_user = schemas.UserCreate(
+                id=user_id,
+                email=email,
+                username=username,
+                name=name,
+                password=None
+            )
+            try:
+                user = crud.create_user(db, new_user)
+                print(f"[DEBUG] Auto-created user {user_id} in interview-history")
+            except Exception as e:
+                print(f"[DEBUG] Error creating user in interview-history: {e}")
+                return schemas.InterviewHistoryResponse(
+                    success=False,
+                    interviews=[],
+                    total_count=0,
+                    error='Failed to create user account'
+                )
+
+        # Get interview sessions for the user
+        interview_sessions = crud.get_interview_sessions_by_user(db, user_id)
+        
+        return schemas.InterviewHistoryResponse(
+            success=True,
+            interviews=interview_sessions,
+            total_count=len(interview_sessions)
+        )
+        
+    except Exception as e:
+        print(f"Error getting interview history: {e}")
+        return schemas.InterviewHistoryResponse(
+            success=False,
+            interviews=[],
+            total_count=0,
+            error=f'Internal server error: {str(e)}'
+        )
+
+@router.get("/interview-review/{session_id}", response_model=schemas.InterviewReviewResponse)
+def get_interview_review(
+    session_id: str,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """
+    Get detailed review for a specific interview session.
+    """
+    try:
+        # Authenticate user
+        user_details = authenticate_and_get_user_details(request)
+        user_id = user_details.get('user_id')
+        
+        if not user_id:
+            return schemas.InterviewReviewResponse(
+                success=False,
+                session=None,
+                messages=[],
+                result=None,
+                performance_metrics=None,
+                error='User not logged in'
+            )
+        
+        # Ensure user exists in database
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            # Auto-create user if they don't exist
+            email = user_details.get("email")
+            if not email:
+                return schemas.InterviewReviewResponse(
+                    success=False,
+                    session=None,
+                    messages=[],
+                    result=None,
+                    performance_metrics=None,
+                    error='Cannot create user: missing email'
+                )
+            
+            name = user_details.get("name") or "No Name"
+            username = email.split('@')[0] if '@' in email else f"user_{user_id[:8]}"
+            
+            new_user = schemas.UserCreate(
+                id=user_id,
+                email=email,
+                username=username,
+                name=name,
+                password=None
+            )
+            try:
+                user = crud.create_user(db, new_user)
+                print(f"[DEBUG] Auto-created user {user_id} in interview-review")
+            except Exception as e:
+                print(f"[DEBUG] Error creating user in interview-review: {e}")
+                return schemas.InterviewReviewResponse(
+                    success=False,
+                    session=None,
+                    messages=[],
+                    result=None,
+                    performance_metrics=None,
+                    error='Failed to create user account'
+                )
+
+        # Get interview session
+        session = crud.get_interview_session_by_id(db, session_id)
+        if not session:
+            return schemas.InterviewReviewResponse(
+                success=False,
+                session=None,
+                messages=[],
+                result=None,
+                performance_metrics=None,
+                error='Interview session not found'
+            )
+        
+        # Verify the session belongs to the authenticated user
+        if session.user_id != user_id:
+            return schemas.InterviewReviewResponse(
+                success=False,
+                session=None,
+                messages=[],
+                result=None,
+                performance_metrics=None,
+                error='Access denied: session does not belong to user'
+            )
+
+        # Get interview messages
+        messages = crud.get_interview_messages_by_session(db, session_id)
+        
+        # Get interview result
+        result = crud.get_interview_result_by_session(db, session_id)
+        
+        # Get performance metrics (eye metrics)
+        performance_metrics = db.query(EyeMetric).filter(
+            EyeMetric.user_id == user_id,
+            EyeMetric.session_id == session_id,
+            EyeMetric.is_auto_save == False
+        ).first()
+        
+        return schemas.InterviewReviewResponse(
+            success=True,
+            session=session,
+            messages=messages,
+            result=result,
+            performance_metrics=performance_metrics
+        )
+        
+    except Exception as e:
+        print(f"Error getting interview review: {e}")
+        return schemas.InterviewReviewResponse(
+            success=False,
+            session=None,
+            messages=[],
+            result=None,
+            performance_metrics=None,
+            error=f'Internal server error: {str(e)}'
+        )
+
+@router.post("/save-interview-result")
+def save_interview_result(
+    request: Request,
+    result_data: schemas.InterviewResultCreate,
+    db: Session = Depends(get_db)
+):
+    """
+    Save interview result with performance scores and feedback.
+    """
+    try:
+        # Authenticate user
+        user_details = authenticate_and_get_user_details(request)
+        user_id = user_details.get('user_id')
+        
+        if not user_id:
+            return {"success": False, "error": "User not logged in"}
+        
+        # Ensure user exists in database
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            # Auto-create user if they don't exist
+            email = user_details.get("email")
+            if not email:
+                return {"success": False, "error": "Cannot create user: missing email"}
+            
+            name = user_details.get("name") or "No Name"
+            username = email.split('@')[0] if '@' in email else f"user_{user_id[:8]}"
+            
+            new_user = schemas.UserCreate(
+                id=user_id,
+                email=email,
+                username=username,
+                name=name,
+                password=None
+            )
+            try:
+                user = crud.create_user(db, new_user)
+                print(f"[DEBUG] Auto-created user {user_id} in save-interview-result")
+            except Exception as e:
+                print(f"[DEBUG] Error creating user in save-interview-result: {e}")
+                return {"success": False, "error": "Failed to create user account"}
+
+        # Verify the session belongs to the authenticated user
+        session = crud.get_interview_session_by_id(db, result_data.session_id)
+        if not session:
+            return {"success": False, "error": "Interview session not found"}
+        
+        if session.user_id != user_id:
+            return {"success": False, "error": "Access denied: session does not belong to user"}
+
+        # Save the interview result
+        result = crud.create_interview_result(db, result_data)
+        
+        # Update the session with performance score
+        crud.update_interview_session(db, result_data.session_id, {
+            "performance_score": result_data.overall_score,
+            "status": "completed"
+        })
+        
+        return {"success": True, "result_id": result.id}
+        
+    except Exception as e:
+        print(f"Error saving interview result: {e}")
+        return {"success": False, "error": f"Internal server error: {str(e)}"}

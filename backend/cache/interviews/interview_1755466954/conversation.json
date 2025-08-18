@@ -1,0 +1,24 @@
+{
+  "conversation": [
+    {
+      "role": "interviewer",
+      "content": "\"Hi Anand, welcome!  It's great to finally meet you. Thanks for taking the time to speak with me today.  I've reviewed your resume and am impressed with your projects, especially the Digital Mall application leveraging Java and MySQL.  It shows a solid understanding of backend development.  \n\nTo start, could you please tell me a little about yourself?  I'd love to hear about your background, your interests within software development, and what you're looking for in a role.\"\n",
+      "timestamp": 1755466955.626891
+    },
+    {
+      "role": "candidate",
+      "content": "al/ml",
+      "timestamp": 1755466965.5506754
+    },
+    {
+      "role": "interviewer",
+      "content": "\"I understand you mentioned 'al/ml'.  To help me fully grasp your point, could you elaborate on what you mean by that?  It's a bit unclear without more context. Perhaps you meant AI/ML (Artificial Intelligence/Machine Learning)? If so,  please explain how that relates to [mention the specific interview question or topic].  Would you like to revise your answer, providing more detail?\"\n",
+      "timestamp": 1755466967.958439
+    },
+    {
+      "role": "interviewer",
+      "content": "Anand, thank you so much for taking the time to speak with me today. I\u2019ve truly enjoyed learning more about your experience and skills, and I found our conversation very insightful.  The team will be reviewing all applications, and we will be in touch within [ timeframe, e.g., the next week ] to let you know the next steps in the hiring process.  Thank you again for your interest in [Company Name].\n",
+      "timestamp": 1755466977.4771261
+    }
+  ]
+}

@@ -158,6 +158,83 @@ class InterviewAnalysisResponse(InterviewAnalysisBase):
         from_attributes = True
 
 # ================================
+# Interview Session & Review Schemas
+# ================================
+class InterviewSessionBase(BaseModel):
+    user_id: str
+    session_id: str
+    start_time: datetime
+    end_time: Optional[datetime] = None
+    duration_minutes: Optional[int] = 0
+    questions_asked: Optional[int] = 0
+    questions_answered: Optional[int] = 0
+    resume_used: Optional[str] = None
+    status: str = "active"  # active, completed, abandoned
+    performance_score: Optional[float] = 0.0
+
+class InterviewSessionCreate(InterviewSessionBase):
+    pass
+
+class InterviewSessionResponse(InterviewSessionBase):
+    id: str
+    
+    class Config:
+        from_attributes = True
+
+class InterviewMessageBase(BaseModel):
+    session_id: str
+    speaker: str  # "ai" or "user"
+    message: str
+    timestamp: datetime
+    message_order: int
+
+class InterviewMessageCreate(InterviewMessageBase):
+    pass
+
+class InterviewMessageResponse(InterviewMessageBase):
+    id: str
+    
+    class Config:
+        from_attributes = True
+
+class InterviewResultBase(BaseModel):
+    session_id: str
+    overall_score: float
+    eye_contact_score: float
+    posture_score: float
+    confidence_score: float
+    clarity_score: float
+    technical_knowledge_score: float
+    communication_score: float
+    ai_feedback: str
+    strengths: List[str]
+    areas_for_improvement: List[str]
+    recommendations: List[str]
+
+class InterviewResultCreate(InterviewResultBase):
+    pass
+
+class InterviewResultResponse(InterviewResultBase):
+    id: str
+    
+    class Config:
+        from_attributes = True
+
+class InterviewHistoryResponse(BaseModel):
+    success: bool
+    interviews: List[InterviewSessionResponse]
+    total_count: int
+    error: Optional[str] = None
+
+class InterviewReviewResponse(BaseModel):
+    success: bool
+    session: InterviewSessionResponse
+    messages: List[InterviewMessageResponse]
+    result: Optional[InterviewResultResponse] = None
+    performance_metrics: Optional[Dict[str, Any]] = None
+    error: Optional[str] = None
+
+# ================================
 # Performance (Generic Example)
 # ================================
 class PerformanceResponse(BaseModel):

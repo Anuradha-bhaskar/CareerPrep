@@ -24,6 +24,7 @@ class User(Base):
     emotions = relationship("UserEmotionData", back_populates="user")
     summaries = relationship("SessionSummary", back_populates="user")
     eye_metrics = relationship("EyeMetric", back_populates="user")
+    interview_sessions = relationship("InterviewSession", back_populates="user")
 
 class Performance(Base):
     __tablename__ = "performance"
@@ -142,3 +143,55 @@ class InterviewAnalysis(Base):
     recommendations = Column(Text)
 
     session = relationship("Session", back_populates="interview_analysis")
+
+class InterviewSession(Base):
+    __tablename__ = "interview_sessions"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    session_id = Column(String(50), unique=True, nullable=False)
+    start_time = Column(DateTime, default=datetime.utcnow)
+    end_time = Column(DateTime)
+    duration_minutes = Column(Integer, default=0)
+    questions_asked = Column(Integer, default=0)
+    questions_answered = Column(Integer, default=0)
+    resume_used = Column(String)
+    status = Column(String, default="active")  # active, completed, abandoned
+    performance_score = Column(Float, default=0.0)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User", back_populates="interview_sessions")
+    messages = relationship("InterviewMessage", back_populates="session", order_by="InterviewMessage.message_order")
+    result = relationship("InterviewResult", back_populates="session", uselist=False)
+
+class InterviewMessage(Base):
+    __tablename__ = "interview_messages"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    session_id = Column(String, ForeignKey("interview_sessions.session_id"), nullable=False)
+    speaker = Column(String(10), nullable=False)  # "ai" or "user"
+    message = Column(Text, nullable=False)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+    message_order = Column(Integer, nullable=False)
+
+    session = relationship("InterviewSession", back_populates="messages")
+
+class InterviewResult(Base):
+    __tablename__ = "interview_results"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    session_id = Column(String, ForeignKey("interview_sessions.session_id"), unique=True, nullable=False)
+    overall_score = Column(Float, nullable=False)
+    eye_contact_score = Column(Float, nullable=False)
+    posture_score = Column(Float, nullable=False)
+    confidence_score = Column(Float, nullable=False)
+    clarity_score = Column(Float, nullable=False)
+    technical_knowledge_score = Column(Float, nullable=False)
+    communication_score = Column(Float, nullable=False)
+    ai_feedback = Column(Text, nullable=False)
+    strengths = Column(JSON)  # List of strings
+    areas_for_improvement = Column(JSON)  # List of strings
+    recommendations = Column(JSON)  # List of strings
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    session = relationship("InterviewSession", back_populates="result")
