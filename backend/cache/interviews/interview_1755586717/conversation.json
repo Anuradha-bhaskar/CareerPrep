@@ -1,0 +1,24 @@
+{
+  "conversation": [
+    {
+      "role": "interviewer",
+      "content": "\"Hi Anand, welcome!  It's great to finally meet you. Thanks for taking the time to speak with me today.  I've reviewed your resume and am impressed with your recent graduation from LJ University and your projects, especially the Java-based Digital Mall system. It sounds like you have a solid foundation in both back-end and front-end development.\n\nTo get started, could you please tell me a little about yourself, your background, and what you're hoping to achieve in your career?\"\n",
+      "timestamp": 1755586719.1768181
+    },
+    {
+      "role": "candidate",
+      "content": "j",
+      "timestamp": 1755586730.2660716
+    },
+    {
+      "role": "interviewer",
+      "content": "That's interesting. Could you tell me more about your most recent project and the technologies you used?",
+      "timestamp": 1755586730.6414573
+    },
+    {
+      "role": "interviewer",
+      "content": "Anand, thank you so much for taking the time to speak with me today. I've gained valuable insights into your experience and skills, and I appreciate you sharing your background with us.  The team will now review all applications, and we will be in touch within [ timeframe, e.g., one week ] to let you know the next steps in the hiring process.  Thank you again, and have a wonderful day.\n",
+      "timestamp": 1755586736.1768827
+    }
+  ]
+}

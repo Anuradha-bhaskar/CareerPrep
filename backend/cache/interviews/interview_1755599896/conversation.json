@@ -1,0 +1,14 @@
+{
+  "conversation": [
+    {
+      "role": "interviewer",
+      "content": "Hi Kajal, it's a pleasure to meet you. Thanks for coming in today.  I've reviewed your resume and am impressed with your recent graduation from LJ University and your projects, especially the Java-based inventory management system and the web-based expense tracker.  They showcase a nice range of skills in both backend and frontend development.\n\nTo get us started, could you please tell me a bit about yourself?  I'd love to hear about your background, your interests within software development, and what you're hoping to achieve in your career.\n",
+      "timestamp": 1755599897.6688843
+    },
+    {
+      "role": "interviewer",
+      "content": "Thank you so much for taking the time to speak with me today. I truly appreciate you sharing your experience and insights; it's been incredibly valuable.  We've gathered some excellent information about your skills and background.  The team will now review all applications, and we will be in touch regarding the next steps in the hiring process.  Thank you again for your time and consideration.\n",
+      "timestamp": 1755600238.6127408
+    }
+  ]
+}

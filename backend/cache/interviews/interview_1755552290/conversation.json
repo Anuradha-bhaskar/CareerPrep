@@ -1,0 +1,54 @@
+{
+  "conversation": [
+    {
+      "role": "interviewer",
+      "content": "Hello! Thank you for joining us today. Could you please introduce yourself and tell me a bit about your background and experience?",
+      "timestamp": 1755552290.5640197
+    },
+    {
+      "role": "candidate",
+      "content": "d",
+      "timestamp": 1755552297.1845462
+    },
+    {
+      "role": "interviewer",
+      "content": "That's interesting. Could you tell me more about your most recent project and the technologies you used?",
+      "timestamp": 1755552297.5903141
+    },
+    {
+      "role": "candidate",
+      "content": "d",
+      "timestamp": 1755552299.9398813
+    },
+    {
+      "role": "interviewer",
+      "content": "That's interesting. Could you tell me more about your most recent project and the technologies you used?",
+      "timestamp": 1755552300.3685184
+    },
+    {
+      "role": "candidate",
+      "content": "d",
+      "timestamp": 1755552303.3009753
+    },
+    {
+      "role": "interviewer",
+      "content": "That's interesting. Could you tell me more about your most recent project and the technologies you used?",
+      "timestamp": 1755552303.7418022
+    },
+    {
+      "role": "candidate",
+      "content": "d",
+      "timestamp": 1755552306.7930121
+    },
+    {
+      "role": "interviewer",
+      "content": "That's interesting. Could you tell me more about your most recent project and the technologies you used?",
+      "timestamp": 1755552307.2041924
+    },
+    {
+      "role": "interviewer",
+      "content": "Thank Kajal Yadav for taking the time to interview with us today. We appreciate your thoughtful responses and sharing your experience. Our team will review the interview and be in touch regarding next steps. Have a great day!",
+      "timestamp": 1755552309.7858531
+    }
+  ]
+}

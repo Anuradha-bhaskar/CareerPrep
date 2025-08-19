@@ -1,0 +1,14 @@
+{
+  "conversation": [
+    {
+      "role": "interviewer",
+      "content": "Hi Kajal, welcome! It's great to meet you.  Thanks for taking the time to speak with me today. I've reviewed your resume and am impressed by your projects, especially the inventory management system and the expense tracker \u2013  it shows a nice range of skills from Java back-end development to front-end web technologies.\n\nTo get us started, could you please tell me a little bit about yourself?  I'd love to hear about your background, your interests within computer science, and what you're hoping to achieve in your career.\n",
+      "timestamp": 1755547036.545602
+    },
+    {
+      "role": "interviewer",
+      "content": "Kajal, thank you so much for taking the time to speak with me today.  I've gained valuable insights into your experience and skills, and I truly appreciate you sharing your background with us.  The team will be reviewing all applications, and we'll be in touch soon to let you know the next steps in the hiring process.  Thank you again, and have a wonderful day.\n",
+      "timestamp": 1755547059.0928047
+    }
+  ]
+}

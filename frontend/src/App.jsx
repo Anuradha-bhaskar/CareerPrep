@@ -8,7 +8,6 @@ import ResumeAnalyser from "./pages/Dashboard/ResumeAnalyser.jsx";
 import AIInterview from "./pages/Dashboard/AIInterview.jsx";
 import InterviewReview from "./pages/Dashboard/InterviewReview.jsx";
 import Profile from "./pages/Dashboard/Profile.jsx";
-import CareerGuidance from "./pages/Dashboard/CareerGuidance.jsx";
 import CareerGuidancePage from "./pages/Dashboard/CareerGuidancePage.jsx";
 
 function App() {
@@ -45,7 +44,6 @@ function App() {
           <Route path="resume-analyser/guidance/:resumeId" element={<CareerGuidancePage />} />
           <Route path="ai-interview" element={<AIInterview />} />
           <Route path="interview-review" element={<InterviewReview />} />
-          <Route path="career-guidance" element={<CareerGuidance />} />
           <Route path="profile" element={<Profile />} />
         </Route>
       </Routes>

@@ -1,0 +1,14 @@
+{
+  "conversation": [
+    {
+      "role": "interviewer",
+      "content": "Hi Kajal, it's a pleasure to meet you.  Thanks for taking the time to interview today. I've reviewed your resume and am impressed with your projects, especially the Java-based inventory management system and the web-based expense tracker.  It shows you've already got some great practical experience with various technologies.\n\nTo get started, could you please tell me a little bit about yourself?  I'd love to hear about your background, what sparked your interest in tech, and what you're hoping to achieve in your career.\n",
+      "timestamp": 1755548749.2241204
+    },
+    {
+      "role": "interviewer",
+      "content": "Thank you so much for taking the time to speak with me today. I truly appreciate you sharing your experience and insights; it's been invaluable in learning more about your skills and qualifications.  The team will be reviewing all applications, and we will be in touch regarding the next steps in the hiring process.  We wish you all the best.\n",
+      "timestamp": 1755548786.106161
+    }
+  ]
+}

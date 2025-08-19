@@ -1,0 +1,24 @@
+{
+  "conversation": [
+    {
+      "role": "interviewer",
+      "content": "Hi Kajal, it's a pleasure to meet you.  Thanks for coming in today.  I've reviewed your resume and I'm impressed with your projects, particularly the Inventory Management System built in Java and your experience with a range of technologies including React, Python, and SQL.  It shows a nice blend of back-end and front-end skills.\n\nTo start, could you please tell me a little bit about yourself?  I'd love to hear about your background, your interests within software development, and what you're hoping to achieve in your career.\n",
+      "timestamp": 1755556897.5774012
+    },
+    {
+      "role": "candidate",
+      "content": "i want to earn money",
+      "timestamp": 1755556922.075559
+    },
+    {
+      "role": "interviewer",
+      "content": "That's interesting. Could you tell me more about your most recent project and the technologies you used?",
+      "timestamp": 1755556922.4978497
+    },
+    {
+      "role": "interviewer",
+      "content": "Thank you for taking the time to interview with us today. We appreciate your thoughtful responses and sharing your experience. Our team will review the interview and be in touch regarding next steps. Have a great day!",
+      "timestamp": 1755556943.7641277
+    }
+  ]
+}

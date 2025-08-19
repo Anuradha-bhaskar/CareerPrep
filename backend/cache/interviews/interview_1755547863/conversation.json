@@ -1,0 +1,24 @@
+{
+  "conversation": [
+    {
+      "role": "interviewer",
+      "content": "Hi Kajal, welcome!  It's great to meet you. Thanks for coming in today. I've reviewed your resume and I'm impressed by your projects, especially the inventory management system built in Java.  You've also got a good foundation in front-end technologies with your work on the expense tracker.\n\nTo get started, could you please tell me a little bit about yourself?  I'd love to hear about your background, your interests within computer science, and what you're hoping to achieve in your career.\n",
+      "timestamp": 1755547865.7673032
+    },
+    {
+      "role": "candidate",
+      "content": "d",
+      "timestamp": 1755547884.9039397
+    },
+    {
+      "role": "interviewer",
+      "content": "Your resume mentions using a custom data structure in your Inventory Management System. Can you tell me more about the specific data structure you chose and why you selected it over other options, such as a standard Java Collection framework class?\n",
+      "timestamp": 1755547887.2903306
+    },
+    {
+      "role": "interviewer",
+      "content": "Kajal, thank you so much for taking the time to speak with me today.  I've truly valued learning more about your experience and skills, and I found our conversation very insightful.  The team will be reviewing all applications, and we'll be in touch within [ timeframe, e.g., the next week ] to let you know the next steps in the hiring process.  Thank you again for your interest in [Company Name]. We appreciate you considering us.\n",
+      "timestamp": 1755547895.5221248
+    }
+  ]
+}

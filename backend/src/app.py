@@ -15,7 +15,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # ✅ CORS for cross-origin requests — required if frontend runs on localhost:5173 etc.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 🔒 In prod, put your frontend URL only
+    allow_origins=["http://localhost:5173"],  # 🔒 In prod, put your frontend URL only
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

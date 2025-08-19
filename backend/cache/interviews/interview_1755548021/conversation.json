@@ -1,0 +1,34 @@
+{
+  "conversation": [
+    {
+      "role": "interviewer",
+      "content": "Hi Kajal, welcome!  It's great to meet you. Thanks for taking the time to speak with me today.  I've reviewed your resume and I'm particularly impressed with your projects, especially the inventory management system built using Java and the expense tracker.  It shows a nice range of skills from back-end development with Java and SQL to front-end development with HTML, CSS, and JavaScript.\n\nTo get started, could you please tell me a little about yourself?  I'd love to hear about your background, your interests within software development, and what you're hoping to achieve in your career.\n",
+      "timestamp": 1755548022.8815696
+    },
+    {
+      "role": "candidate",
+      "content": ";;",
+      "timestamp": 1755548029.096253
+    },
+    {
+      "role": "interviewer",
+      "content": "Your inventory management system uses a custom data structure.  Can you tell me more about why you chose a custom data structure over a standard Java collection like a HashMap or ArrayList, and what were the trade-offs you considered in making that decision?\n",
+      "timestamp": 1755548031.5211396
+    },
+    {
+      "role": "candidate",
+      "content": "j",
+      "timestamp": 1755548040.4129207
+    },
+    {
+      "role": "interviewer",
+      "content": "Following up on your expense tracker,  you used HTML, CSS, and JavaScript.  What were some of the challenges you encountered during the front-end development of that project, and how did you overcome them?\n",
+      "timestamp": 1755548042.6948643
+    },
+    {
+      "role": "interviewer",
+      "content": "Kajal, thank you so much for taking the time to speak with me today. I've truly appreciated learning more about your experience and skills;  it's been a valuable conversation.  The team will be reviewing all applications, and we'll be in touch regarding the next steps in your candidacy within [ timeframe, e.g., the next week ].  We wish you all the best.\n",
+      "timestamp": 1755548049.5250666
+    }
+  ]
+}

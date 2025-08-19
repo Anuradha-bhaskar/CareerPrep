@@ -1,0 +1,34 @@
+{
+  "conversation": [
+    {
+      "role": "interviewer",
+      "content": "Hello! Thank you for joining us today. Could you please introduce yourself and tell me a bit about your background and experience?",
+      "timestamp": 1755602692.831452
+    },
+    {
+      "role": "candidate",
+      "content": "hello",
+      "timestamp": 1755602715.5956674
+    },
+    {
+      "role": "interviewer",
+      "content": "That's interesting. Could you tell me more about your most recent project and the technologies you used?",
+      "timestamp": 1755602715.990965
+    },
+    {
+      "role": "candidate",
+      "content": "NO",
+      "timestamp": 1755602719.060838
+    },
+    {
+      "role": "interviewer",
+      "content": "That's interesting. Could you tell me more about your most recent project and the technologies you used?",
+      "timestamp": 1755602719.3974679
+    },
+    {
+      "role": "interviewer",
+      "content": "Thank Kajal Yadav for taking the time to interview with us today. We appreciate your thoughtful responses and sharing your experience. Our team will review the interview and be in touch regarding next steps. Have a great day!",
+      "timestamp": 1755602732.5862794
+    }
+  ]
+}

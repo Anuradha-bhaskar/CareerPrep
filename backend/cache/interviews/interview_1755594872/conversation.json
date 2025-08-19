@@ -1,0 +1,44 @@
+{
+  "conversation": [
+    {
+      "role": "interviewer",
+      "content": "Hi Anand, it's a pleasure to meet you.  Thanks for coming in today. I reviewed your resume and was particularly impressed by your projects, especially the Java-based Digital Mall system and the GameZork platform.  It shows a nice range of skills, from back-end development with Java and MySQL to front-end work with HTML, CSS, and JavaScript.\n\nTo get started, could you please tell me a little about yourself, your background, and what interests you most about this role?  I'm eager to hear more about your experience and career aspirations.\n",
+      "timestamp": 1755594874.0444777
+    },
+    {
+      "role": "candidate",
+      "content": "start interview",
+      "timestamp": 1755595161.6339257
+    },
+    {
+      "role": "interviewer",
+      "content": "Your Digital Mall project mentions using Java, phpMyAdmin (MySQL), and data structures. Can you describe a specific challenge you faced during its development, how you approached solving it, and what you learned from the experience?\n",
+      "timestamp": 1755595163.8583486
+    },
+    {
+      "role": "candidate",
+      "content": "s",
+      "timestamp": 1755595170.5165398
+    },
+    {
+      "role": "interviewer",
+      "content": "That's interesting. Could you tell me more about your most recent project and the technologies you used?",
+      "timestamp": 1755595172.1841745
+    },
+    {
+      "role": "candidate",
+      "content": "a",
+      "timestamp": 1755595177.9836266
+    },
+    {
+      "role": "interviewer",
+      "content": "That's interesting. Could you tell me more about your most recent project and the technologies you used?",
+      "timestamp": 1755595178.337679
+    },
+    {
+      "role": "interviewer",
+      "content": "Thank Anand Yadav for taking the time to interview with us today. We appreciate your thoughtful responses and sharing your experience. Our team will review the interview and be in touch regarding next steps. Have a great day!",
+      "timestamp": 1755595193.3331637
+    }
+  ]
+}

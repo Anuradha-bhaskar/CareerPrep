@@ -1,0 +1,24 @@
+{
+  "conversation": [
+    {
+      "role": "interviewer",
+      "content": "Hello! Thank you for joining us today. Could you please introduce yourself and tell me a bit about your background and experience?",
+      "timestamp": 1755605260.706507
+    },
+    {
+      "role": "candidate",
+      "content": "start interview",
+      "timestamp": 1755605262.5183458
+    },
+    {
+      "role": "interviewer",
+      "content": "That's interesting. Could you tell me more about your most recent project and the technologies you used?",
+      "timestamp": 1755605263.2393308
+    },
+    {
+      "role": "interviewer",
+      "content": "Thank you for taking the time to interview with us today. We appreciate your thoughtful responses and sharing your experience. Our team will review the interview and be in touch regarding next steps. Have a great day!",
+      "timestamp": 1755605269.676054
+    }
+  ]
+}

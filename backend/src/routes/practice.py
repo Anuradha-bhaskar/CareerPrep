@@ -110,9 +110,54 @@ def get_interview_analysis(
     """
     Get AI-generated interview analysis for a session.
     """
-    authenticate_and_get_user_details(request)
+    try:
+        # Authenticate user
+        user_details = authenticate_and_get_user_details(request)
+        user_id = user_details.get("user_id")
 
-    return crud.get_interview_analysis(db, session_id)
+        # Verify session belongs to user
+        session = crud.get_interview_session_by_id(db, session_id)
+        if not session:
+            raise HTTPException(status_code=404, detail="Interview session not found.")
+        if session.user_id != user_id:
+            raise HTTPException(status_code=403, detail="You do not have access to this session.")
+
+        # Try fetching stored analysis first
+        try:
+            analysis = crud.get_interview_analysis(db, session_id)
+            return analysis
+        except HTTPException as e:
+            if e.status_code != 404:
+                raise
+            # Fallback: derive analysis-like response from InterviewResult if available
+            result = crud.get_interview_result_by_session(db, session_id)
+            if not result:
+                raise HTTPException(status_code=404, detail="Analysis not found")
+
+            # Convert list fields to text blocks
+            strengths_txt = "\n".join(result.strengths or []) if isinstance(result.strengths, list) else (result.strengths or "")
+            areas_txt = "\n".join(result.areas_for_improvement or []) if isinstance(result.areas_for_improvement, list) else (result.areas_for_improvement or "")
+            recs_txt = "\n".join(result.recommendations or []) if isinstance(result.recommendations, list) else (result.recommendations or "")
+
+            # Map numeric scores to string ratings (simple representation)
+            comm_rating = f"Communication: {getattr(result, 'communication_score', 0):.0f}/100"
+            tech_rating = f"Technical: {getattr(result, 'technical_knowledge_score', 0):.0f}/100"
+
+            return {
+                "id": 0,  # synthetic id for response shaping
+                "session_id": session_id,
+                "strengths": strengths_txt,
+                "areas_for_improvement": areas_txt,
+                "communication_rating": comm_rating,
+                "technical_rating": tech_rating,
+                "recommendations": recs_txt,
+            }
+    except HTTPException as e:
+        print(f"HTTPException: {e.detail}")
+        raise e
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        raise HTTPException(status_code=500, detail="An unexpected error occurred.")
 
 
 

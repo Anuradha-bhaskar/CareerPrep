@@ -1,0 +1,24 @@
+{
+  "conversation": [
+    {
+      "role": "interviewer",
+      "content": "Hi Kajal, welcome!  It's great to finally meet you.  I've reviewed your resume and I'm impressed by your recent graduation from LJ University and your projects, especially the Java-based inventory management system and the web-based expense tracker.  It shows a good understanding of both back-end and front-end development.\n\nTo get started, could you please tell me a little bit about yourself?  I'd love to hear about your background, your interests within computer science, and what you're hoping to achieve in your career.\n",
+      "timestamp": 1755600617.3472807
+    },
+    {
+      "role": "candidate",
+      "content": "start interview",
+      "timestamp": 1755600690.3685393
+    },
+    {
+      "role": "interviewer",
+      "content": "Your Inventory Management System project mentions using a custom data structure. Can you elaborate on why you chose to implement a custom data structure instead of using a readily available Java collection like a HashMap or ArrayList, and what were the trade-offs involved in that decision?\n",
+      "timestamp": 1755600692.5942416
+    },
+    {
+      "role": "interviewer",
+      "content": "Kajal, thank you so much for taking the time to speak with me today. I've truly appreciated learning more about your experience and skills, and I found our conversation to be very insightful.  The team will be reviewing all applications, and we will be in touch regarding next steps in the coming days.  Thank you again for your interest in [Company Name]. We wish you all the best.\n",
+      "timestamp": 1755600708.0894372
+    }
+  ]
+}

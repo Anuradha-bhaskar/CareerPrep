@@ -1,0 +1,14 @@
+{
+  "conversation": [
+    {
+      "role": "interviewer",
+      "content": "\"Hi Kajal, welcome!  It's great to finally meet you.  I've reviewed your resume and I'm impressed by your projects, especially the inventory management system and the expense tracker.  Your skills in Java, Python, and front-end technologies like React are also very relevant to the roles we have available.\n\nTo get started, could you please tell me a little about yourself?  I'd love to hear about your background, your interests within computer science and engineering, and what motivates you in your work.\"\n",
+      "timestamp": 1755548972.0829892
+    },
+    {
+      "role": "interviewer",
+      "content": "Thank you for taking the time to interview with us today. We appreciate your thoughtful responses and sharing your experience. Our team will review the interview and be in touch regarding next steps. Have a great day!",
+      "timestamp": 1755549004.2566957
+    }
+  ]
+}

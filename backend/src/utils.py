@@ -21,6 +21,23 @@ def authenticate_and_get_user_details(request):
     print(f"🔍 Request headers: {dict(request.headers)}")
     print(f"🔍 Authorization header: {request.headers.get('authorization', 'Not found')}")
 
+    # Dev bypass: allow local testing without Clerk when explicitly enabled
+    try:
+        if os.getenv("ALLOW_DEV_BYPASS") == "1":
+            dev_user_id = request.headers.get("x-dev-user")
+            if dev_user_id:
+                dev_email = request.headers.get("x-dev-email") or f"{dev_user_id}@dev.local"
+                dev_name = request.headers.get("x-dev-name") or "Dev User"
+                print("[DEV] Bypassing Clerk auth via ALLOW_DEV_BYPASS and X-Dev-User header")
+                return {
+                    "user_id": dev_user_id,
+                    "email": dev_email,
+                    "name": dev_name,
+                }
+    except Exception as e:
+        # Do not block auth on bypass branch errors; continue to normal auth
+        print(f"[DEV] Bypass check error (ignored): {e}")
+
     try:
         request_state = clerk_sdk.authenticate_request(
             request,
@@ -57,6 +74,9 @@ def authenticate_and_get_user_details(request):
             "name": name or ""
         }
 
+    except HTTPException:
+        # Re-raise HTTPExceptions such as 401/400 without masking as 500
+        raise
     except Exception as e:
         print(f"🔥 Exception during authentication: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

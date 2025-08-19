@@ -2,18 +2,7 @@ import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { useAuth } from "@clerk/clerk-react"
 import { 
-  ArrowLeft, 
-  Briefcase, 
-  TrendingUp, 
-  DollarSign, 
-  Target, 
-  BookOpen,
-  CheckCircle,
-  Clock,
-  Star,
-  ChevronDown,
-  ChevronUp,
-  XCircle
+  ArrowLeft
 } from "lucide-react"
 
 export default function CareerGuidancePage() {
@@ -24,13 +13,9 @@ export default function CareerGuidancePage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [careerRecommendations, setCareerRecommendations] = useState([])
-  const [resumeTips, setResumeTips] = useState(null)
   const [selectedCareer, setSelectedCareer] = useState(null)
   const [roadmap, setRoadmap] = useState(null)
   const [roadmapLoading, setRoadmapLoading] = useState(false)
-  const [expandedTipsSections, setExpandedTipsSections] = useState({})
-  const [tipsLoading, setTipsLoading] = useState(false)
-  const [tipsError, setTipsError] = useState(null)
 
   useEffect(() => {
     const fetchCareerGuidance = async () => {
@@ -70,40 +55,6 @@ export default function CareerGuidancePage() {
     }
   }, [resumeId, getToken])
 
-  const fetchResumeTips = async () => {
-    setTipsLoading(true)
-    setTipsError(null)
-    try {
-      const token = await getToken()
-      if (!token) {
-        throw new Error('Not authenticated')
-      }
-
-      // Fetch resume tips
-      const tipsResponse = await fetch(
-        `http://localhost:8000/api/resumes/${resumeId}/tips`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          }
-        }
-      )
-
-      if (!tipsResponse.ok) {
-        throw new Error('Failed to fetch resume tips')
-      }
-
-      const tipsData = await tipsResponse.json()
-      setResumeTips(tipsData.tips || {})
-
-    } catch (err) {
-      console.error('Error fetching resume tips:', err)
-      setTipsError(err.message)
-    } finally {
-      setTipsLoading(false)
-    }
-  }
-
   const fetchRoadmap = async (careerTitle, skillsNeeded) => {
     setRoadmapLoading(true)
     setRoadmap(null) // Clear previous roadmap
@@ -139,13 +90,6 @@ export default function CareerGuidancePage() {
     fetchRoadmap(career.role, career.skills_needed)
   }
 
-  const toggleTipsSection = (section) => {
-    setExpandedTipsSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }))
-  }
-
   const getMatchColor = (match) => {
     if (match >= 80) return "text-green-600 bg-green-100"
     if (match >= 60) return "text-yellow-600 bg-yellow-100"
@@ -156,12 +100,8 @@ export default function CareerGuidancePage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center space-y-6 max-w-md">
-          {/* Animated Logo/Icon */}
-          <div className="relative">
-            <div className="w-20 h-20 mx-auto bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-xl animate-pulse">
-              <Briefcase className="w-10 h-10 text-white" />
-            </div>
-            {/* Spinning Ring */}
+          {/* Loading Indicator */}
+          <div className="relative w-20 h-20 mx-auto">
             <div className="absolute inset-0 w-20 h-20 mx-auto border-4 border-transparent border-t-blue-500 border-r-purple-500 rounded-full animate-spin"></div>
           </div>
           
@@ -185,7 +125,6 @@ export default function CareerGuidancePage() {
             
             <div className="text-xs text-gray-500 space-y-1">
               <div className="flex items-center justify-center gap-2">
-                <CheckCircle className="w-4 h-4 text-green-500" />
                 <span>Resume uploaded successfully</span>
               </div>
               <div className="flex items-center justify-center gap-2">
@@ -193,7 +132,6 @@ export default function CareerGuidancePage() {
                 <span>Extracting skills and experience</span>
               </div>
               <div className="flex items-center justify-center gap-2 opacity-50">
-                <Clock className="w-4 h-4 text-gray-400" />
                 <span>Generating career recommendations</span>
               </div>
             </div>
@@ -201,10 +139,7 @@ export default function CareerGuidancePage() {
           
           {/* Estimated Time */}
           <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 border border-blue-100">
-            <p className="text-xs text-gray-600">
-              <Clock className="w-3 h-3 inline mr-1" />
-              This usually takes 30-60 seconds
-            </p>
+            <p className="text-xs text-gray-600">This usually takes 30-60 seconds</p>
           </div>
         </div>
       </div>
@@ -215,10 +150,8 @@ export default function CareerGuidancePage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center space-y-6 max-w-md">
-          {/* Error Icon */}
-          <div className="w-20 h-20 mx-auto bg-gradient-to-br from-red-500 to-pink-600 rounded-3xl flex items-center justify-center shadow-xl">
-            <Target className="w-10 h-10 text-white" />
-          </div>
+          {/* Error Header */}
+          <div className="w-20 h-20 mx-auto bg-gradient-to-br from-red-500 to-pink-600 rounded-3xl shadow-xl" />
           
           {/* Error Message */}
           <div className="space-y-3">
@@ -247,27 +180,15 @@ export default function CareerGuidancePage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <button
-          onClick={() => navigate('/dashboard/resume-analyser')}
-          className="flex items-center gap-2 text-purple-600 hover:text-purple-700 transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-        <div className="h-6 w-px bg-gray-300"></div>
-        <h1 className="text-2xl font-bold text-gray-800">Career Guidance & Recommendations</h1>
+      <div className="flex items-center justify-center">
+        <h1 className="text-2xl font-bold text-gray-800 text-center">Career Guidance & Recommendations</h1>
       </div>
 
       {/* Career Recommendations */}
       <div className="space-y-6">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-purple-100 rounded-lg">
-            <Briefcase className="w-6 h-6 text-purple-600" />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-gray-800">Recommended Career Paths</h2>
-            <p className="text-sm text-gray-600">Discover careers that match your skills and experience</p>
-          </div>
+        <div>
+          <h2 className="text-xl font-bold text-gray-800">Recommended Career Paths</h2>
+          <p className="text-sm text-gray-600">Discover careers that match your skills and experience</p>
         </div>
         
         <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
@@ -293,32 +214,17 @@ export default function CareerGuidancePage() {
               <p className="text-gray-600 text-sm mb-6 leading-relaxed">{career.description}</p>
               
               <div className="space-y-3 text-sm">
-                <div className="flex items-start gap-3">
-                  <div className="p-1 bg-blue-100 rounded">
-                    <Target className="w-3 h-3 text-blue-600" />
-                  </div>
-                  <div>
-                    <span className="text-gray-500 text-xs">Required Skills</span>
-                    <p className="text-gray-700 font-medium">{career.skills_needed}</p>
-                  </div>
+                <div>
+                  <span className="text-gray-500 text-xs">Required Skills</span>
+                  <p className="text-gray-700 font-medium">{career.skills_needed}</p>
                 </div>
-                <div className="flex items-start gap-3">
-                  <div className="p-1 bg-green-100 rounded">
-                    <TrendingUp className="w-3 h-3 text-green-600" />
-                  </div>
-                  <div>
-                    <span className="text-gray-500 text-xs">Growth Potential</span>
-                    <p className="text-gray-700 font-medium">{career.growth_potential}</p>
-                  </div>
+                <div>
+                  <span className="text-gray-500 text-xs">Growth Potential</span>
+                  <p className="text-gray-700 font-medium">{career.growth_potential}</p>
                 </div>
-                <div className="flex items-start gap-3">
-                  <div className="p-1 bg-yellow-100 rounded">
-                    <DollarSign className="w-3 h-3 text-yellow-600" />
-                  </div>
-                  <div>
-                    <span className="text-gray-500 text-xs">Salary Range</span>
-                    <p className="text-gray-700 font-medium">{career.salary_range}</p>
-                  </div>
+                <div>
+                  <span className="text-gray-500 text-xs">Salary Range</span>
+                  <p className="text-gray-700 font-medium">{career.salary_range}</p>
                 </div>
               </div>
               
@@ -335,14 +241,9 @@ export default function CareerGuidancePage() {
       {/* Career Roadmap */}
       {selectedCareer && (
         <div className="space-y-6">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <BookOpen className="w-6 h-6 text-blue-600" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-gray-800">Career Roadmap: {selectedCareer.role}</h2>
-              <p className="text-sm text-gray-600">Your personalized path to success</p>
-            </div>
+          <div>
+            <h2 className="text-xl font-bold text-gray-800">Career Roadmap: {selectedCareer.role}</h2>
+            <p className="text-sm text-gray-600">Your personalized path to success</p>
           </div>
           
           {roadmapLoading ? (
@@ -379,7 +280,6 @@ export default function CareerGuidancePage() {
                     </div>
                     <div className="flex-1 bg-white rounded-lg p-4 shadow-sm border border-blue-100">
                       <div className="flex items-center gap-2 mb-3">
-                        <Clock className="w-4 h-4 text-blue-600" />
                         <span className="font-semibold text-gray-800">{step.timeframe}</span>
                         <span className="text-gray-500">—</span>
                         <span className="text-blue-600 font-medium">{step.focus}</span>
@@ -387,8 +287,7 @@ export default function CareerGuidancePage() {
                       <ul className="space-y-2">
                         {step.tasks?.map((task, taskIndex) => (
                           <li key={taskIndex} className="flex items-start gap-3 text-gray-700">
-                            <CheckCircle className="w-4 h-4 text-green-500 mt-1 flex-shrink-0" />
-                            <span className="leading-relaxed">{task}</span>
+                            <span className="leading-relaxed">• {task}</span>
                           </li>
                         ))}
                       </ul>
@@ -399,14 +298,10 @@ export default function CareerGuidancePage() {
               
               {roadmap.additional_resources && (
                 <div className="mt-8 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
-                  <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                    <Star className="w-5 h-5 text-yellow-500" />
-                    Additional Resources
-                  </h4>
+                  <h4 className="font-semibold text-gray-800 mb-3">Additional Resources</h4>
                   <div className="grid gap-2 sm:grid-cols-1 lg:grid-cols-2">
                     {roadmap.additional_resources.map((resource, index) => (
                       <div key={index} className="flex items-center gap-2 text-gray-700 bg-white p-2 rounded border border-yellow-100">
-                        <Star className="w-4 h-4 text-yellow-500 flex-shrink-0" />
                         <span className="text-sm">{resource}</span>
                       </div>
                     ))}
@@ -417,89 +312,6 @@ export default function CareerGuidancePage() {
           ) : null}
         </div>
       )}
-
-      {/* Resume Tips */}
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <Target className="w-6 h-6 text-green-600" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-gray-800">Resume Improvement Tips</h2>
-              <p className="text-sm text-gray-600">Get AI-powered suggestions to enhance your resume</p>
-            </div>
-          </div>
-          
-          {!resumeTips && (
-            <button
-              onClick={fetchResumeTips}
-              disabled={tipsLoading}
-              className="bg-green-600 text-white px-6 py-2 rounded-lg shadow-md hover:bg-green-700 disabled:bg-green-400 disabled:cursor-not-allowed transition-colors duration-200 flex items-center gap-2"
-            >
-              {tipsLoading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Loading Tips...</span>
-                </>
-              ) : (
-                <>
-                  <Target className="w-4 h-4" />
-                  <span>Get Tips</span>
-                </>
-              )}
-            </button>
-          )}
-        </div>
-        
-        {tipsError && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-800">
-            <XCircle className="w-5 h-5" />
-            <span>{tipsError}</span>
-          </div>
-        )}
-        
-        {resumeTips && (
-          <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
-            {Object.entries(resumeTips).map(([section, tips]) => (
-              <div key={section} className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow">
-                <button
-                  onClick={() => toggleTipsSection(section)}
-                  className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 transition-colors"
-                >
-                  <h3 className="font-semibold text-gray-800 capitalize flex items-center gap-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    {section.replace(/_/g, ' ')}
-                  </h3>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
-                      {tips.length} tips
-                    </span>
-                    {expandedTipsSections[section] ? (
-                      <ChevronUp className="w-5 h-5 text-gray-500" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5 text-gray-500" />
-                    )}
-                  </div>
-                </button>
-                
-                {expandedTipsSections[section] && (
-                  <div className="p-4 pt-0 bg-gray-50">
-                    <ul className="space-y-3">
-                      {tips.map((tip, index) => (
-                        <li key={index} className="flex items-start gap-3 text-gray-700 bg-white p-3 rounded-lg border border-gray-100">
-                          <CheckCircle className="w-4 h-4 text-green-500 mt-1 flex-shrink-0" />
-                          <span className="leading-relaxed text-sm">{tip}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
     </div>
   )
 }

@@ -1,0 +1,24 @@
+{
+  "conversation": [
+    {
+      "role": "interviewer",
+      "content": "Hi Anand, welcome! It's great to meet you.  Thanks for taking the time to interview with us today.  Your resume shows a strong foundation in programming, particularly with Java and your experience building the Digital Mall application is very interesting. I also noticed your GameZork project, showcasing your front-end skills.\n\nTo get started, could you please tell me a little about yourself?  Briefly describe your background, your interests within software development, and what you're looking for in a role?\n",
+      "timestamp": 1755588225.356752
+    },
+    {
+      "role": "candidate",
+      "content": "start interview",
+      "timestamp": 1755588985.9216738
+    },
+    {
+      "role": "interviewer",
+      "content": "Your Digital Mall project mentions using Java and MySQL. Can you describe a specific challenge you faced during its development, how you approached solving it, and what you learned from the experience?\n",
+      "timestamp": 1755588989.1471276
+    },
+    {
+      "role": "interviewer",
+      "content": "Anand, thank you so much for taking the time to speak with me today.  I've truly appreciated learning more about your experience and skills, and I found our conversation very insightful.  The team will be reviewing all applications, and we will be in touch soon to let you know the next steps in the hiring process.  Thank you again for your time and consideration.  We wish you all the best.\n",
+      "timestamp": 1755589175.760247
+    }
+  ]
+}
