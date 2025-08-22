@@ -12,6 +12,8 @@ export default function AIInterviewContent() {
   const [currentMessage, setCurrentMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isRecognizing, setIsRecognizing] = useState(false);
+  // STT support detection
+  const [sttSupported, setSttSupported] = useState(null);
   const [emotionStats, setEmotionStats] = useState(null);
   const [performanceMetrics, setPerformanceMetrics] = useState(null);
   // Session identifier for the active interview
@@ -342,6 +344,16 @@ export default function AIInterviewContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Detect STT support once on mount
+  useEffect(() => {
+    try {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      setSttSupported(Boolean(SR));
+    } catch {
+      setSttSupported(false);
+    }
+  }, []);
+
   // When interview ends and we have a final AI message, save it for persistence
   useEffect(() => {
     if (!isInterviewActive) {
@@ -429,8 +441,11 @@ export default function AIInterviewContent() {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) {
       console.warn('Web Speech API not supported in this browser');
+      try { setSttSupported(false); } catch {}
       return Promise.resolve(null);
     }
+    // Stop any ongoing speech synthesis to avoid audio ducking/conflicts
+    try { stopSpeaking(); } catch {}
     setIsRecognizing(true);
     // Ensure any previous recognition is stopped
     try { recognitionRef.current?.stop?.(); recognitionRef.current?.abort?.(); } catch {}
@@ -486,7 +501,7 @@ export default function AIInterviewContent() {
         resolve(null);
       }
     });
-  }, [recognitionRef]);
+  }, [recognitionRef, stopSpeaking]);
 
   // Attach stream to video element after it exists
   useEffect(() => {
@@ -1403,6 +1418,12 @@ export default function AIInterviewContent() {
                     {voiceOn ? '🔊 Voice On' : '🔈 Voice Off'}
                   </button>
                 </div>
+                {/* STT unsupported warning */}
+                {(sttSupported === false) && (
+                  <div className="mb-3 rounded-md border border-amber-200 bg-amber-50 text-amber-800 px-3 py-2 text-sm">
+                    Your browser doesn't support Speech Recognition. You can still type responses or switch to Chrome/Edge.
+                  </div>
+                )}
                 <div
                   ref={messagesContainerRef}
                   className="space-y-4 mb-4 overflow-y-auto h-96 overscroll-contain"
@@ -1454,11 +1475,16 @@ export default function AIInterviewContent() {
                       const text = await recognizeOnce();
                       if (text) setCurrentMessage(prev => (prev ? (prev.trimEnd() + ' ' + text) : text));
                     }}
-                    disabled={isLoading || isEnding}
-                    className="px-3 py-2 rounded-lg border border-gray-200 text-gray-700 bg-white hover:bg-gray-50"
-                    title="Dictate (speech-to-text)"
+                    disabled={isLoading || isEnding || isRecognizing || sttSupported === false}
+                    className={`px-3 py-2 rounded-lg border text-gray-700 transition-colors ${
+                      isRecognizing
+                        ? 'border-purple-400 bg-purple-50 ring-2 ring-purple-400 ring-offset-1 animate-pulse'
+                        : 'border-gray-200 bg-white hover:bg-gray-50'
+                    }`}
+                    aria-label={'Dictate (speech-to-text)'}
+                    title={'Dictate (speech-to-text)'}
                   >
-                    🎤
+                    {'🎤'}
                   </button>
                   <input
                     type="text"

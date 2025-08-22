@@ -1,0 +1,14 @@
+{
+  "conversation": [
+    {
+      "role": "interviewer",
+      "content": "\"Hi Anand, welcome!  It's great to finally meet you. Thanks for taking the time to speak with me today.  I've reviewed your resume and I'm impressed with your recent graduation from LJ University and your projects, especially the Java-based Digital Mall system. That sounds like a really interesting undertaking.\n\nTo get us started, could you please tell me a little bit about yourself, your background, and what kind of roles or projects you're most interested in pursuing?\"\n",
+      "timestamp": 1755870901.4989605
+    },
+    {
+      "role": "interviewer",
+      "content": "Anand, thank you so much for taking the time to speak with me today. I\u2019ve gained valuable insights into your experience and skills, and I truly appreciate you sharing your background with us.  The team will be reviewing all applications, and we'll be in touch within [ timeframe, e.g., the next week ] to let you know the next steps in the hiring process.  It was a pleasure meeting you.\n",
+      "timestamp": 1755870906.5044584
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "conversation": [
+    {
+      "role": "interviewer",
+      "content": "\"Hi Anand, welcome!  It's great to finally meet you. Thanks for taking the time to interview with us today.  I've reviewed your resume and I'm impressed with your recent graduation from LJ University and your projects, particularly the Java-based Digital Mall system.  It sounds like you have a solid foundation in both back-end and front-end development.\n\nTo get started, could you please tell me a little about yourself, your background, and what interests you most in the field of software development?\"\n",
+      "timestamp": 1755870595.4008844
+    },
+    {
+      "role": "candidate",
+      "content": "hello",
+      "timestamp": 1755870645.2637734
+    },
+    {
+      "role": "interviewer",
+      "content": "Anand, thank you so much for taking the time to speak with me today. I've truly enjoyed learning more about your experience and skills, and I found our conversation very insightful.  The team will be reviewing all applications, and we will be in touch to let you know the next steps in the process within [ timeframe, e.g., the next week ].  Thank you again for your time and consideration.  We wish you all the best.\n",
+      "timestamp": 1755870650.2819707
+    },
+    {
+      "role": "interviewer",
+      "content": "Your Digital Mall project mentions using phpMyAdmin with MySQL. Can you describe a specific challenge you encountered while working with the database and how you overcame it?\n",
+      "timestamp": 1755870658.4908597
+    }
+  ]
+}

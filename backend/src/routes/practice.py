@@ -18,39 +18,15 @@ import google.generativeai as genai
 import cv2
 import base64
 import numpy as np
-from keras.models import Sequential
-from keras.layers import Conv2D, MaxPooling2D, Dropout, Flatten, Dense
-from tensorflow.keras.models import load_model
+# Removed Keras/TensorFlow imports; emotion prediction will be a placeholder
 import datetime
 
 router = APIRouter()
 
 active_interviews = {}
 
-def build_model():
-    model = Sequential()
-    model.add(Conv2D(32, kernel_size=(3, 3),
-              activation='relu', input_shape=(48, 48, 1)))
-    model.add(Conv2D(64, kernel_size=(3, 3), activation='relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.25))
-
-    model.add(Conv2D(128, kernel_size=(3, 3), activation='relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Conv2D(128, kernel_size=(3, 3), activation='relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.25))
-
-    model.add(Flatten())
-    model.add(Dense(1024, activation='relu'))
-    model.add(Dropout(0.5))
-    model.add(Dense(7, activation='softmax'))
-
-    return model
-
-
-model = build_model()
-model.load_weights('model.h5')
+# NOTE: Keras model removed. Emotion prediction now uses a simple placeholder to keep
+# the API stable. If you want real predictions, integrate a service or TF.js separately.
 # Dictionary mapping emotion indices to labels
 emotion_dict = {0: "Angry", 1: "Disgusted", 2: "Fearful",
                 3: "Happy", 4: "Neutral", 5: "Sad", 6: "Surprised"}
@@ -612,16 +588,13 @@ def process_image(
             # Draw rectangle around the face
             cv2.rectangle(frame, (x, y-50), (x+w, y+h+10), (255, 0, 0), 2)
 
-            # Extract the face ROI
+            # Extract the face ROI (kept in case future use)
             roi_gray = gray[y:y + h, x:x + w]
-            cropped_img = np.expand_dims(np.expand_dims(
-                cv2.resize(roi_gray, (48, 48)), -1), 0)
+            _ = cv2.resize(roi_gray, (48, 48))  # preprocessed ROI (unused without model)
 
-            # Make prediction
-            prediction = model.predict(cropped_img)
-            maxindex = int(np.argmax(prediction))
-            probability = float(prediction[0][maxindex])
-            detected_emotion = emotion_dict[maxindex]
+            # Placeholder prediction without Keras: default to Neutral with low confidence
+            detected_emotion = "Neutral"
+            probability = 0.0
 
             # Add text to the image
             cv2.putText(frame, detected_emotion, (x+20, y-60),

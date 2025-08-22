@@ -1,0 +1,24 @@
+{
+  "conversation": [
+    {
+      "role": "interviewer",
+      "content": "\"Hi Kajal, it's a pleasure to meet you. Thanks for coming in today.  I've reviewed your resume and am impressed by your projects, especially the Inventory Management System using Java and the Expense Tracker built with HTML, CSS, and JavaScript.  It shows a good grasp of both backend and frontend development.\n\nBefore we dive into specific questions, I'd love to hear more about you. Could you please introduce yourself, briefly describe your background, and tell me a little about your interests within the tech field?\"\n",
+      "timestamp": 1755866317.0691667
+    },
+    {
+      "role": "candidate",
+      "content": "no",
+      "timestamp": 1755866387.5256467
+    },
+    {
+      "role": "interviewer",
+      "content": "Okay, Kajal,  since you're still in university, I understand you might not have extensive professional experience yet.  Let's focus on your projects.  Can you tell me more about the data structure you chose for your Inventory Management System and why you selected it over other options?\n",
+      "timestamp": 1755866390.1584253
+    },
+    {
+      "role": "interviewer",
+      "content": "Kajal, thank you so much for taking the time to speak with me today.  I've genuinely enjoyed learning more about your experience and skills; your insights have been invaluable.  The team will now review all applications, and we'll be in touch within [ timeframe, e.g., one week ] to let you know the next steps in the process.  Thank you again for your interest in [Company Name].  We wish you all the best.\n",
+      "timestamp": 1755866419.2799435
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "conversation": [
+    {
+      "role": "interviewer",
+      "content": "\"Hi Anand, welcome! It's great to finally meet you.  Thanks for taking the time to interview with us today.  Your resume shows a solid foundation in both backend and frontend development, especially with your Java and React experience. I'm particularly interested in your Digital Mall project \u2013 that sounds impressive.\n\nTo get us started, could you please tell me a bit about yourself?  I'd love to hear about your background, your interests within software development, and what you're hoping to achieve in your career.\"\n",
+      "timestamp": 1755869315.689578
+    },
+    {
+      "role": "candidate",
+      "content": "start interview",
+      "timestamp": 1755869809.7141469
+    },
+    {
+      "role": "interviewer",
+      "content": "So, you mentioned your Digital Mall project uses Java and MySQL. Can you walk me through a specific challenge you faced during its development, how you approached solving it, and what you learned from the experience?\n",
+      "timestamp": 1755869821.896416
+    },
+    {
+      "role": "candidate",
+      "content": "hello",
+      "timestamp": 1755869851.5363753
+    },
+    {
+      "role": "interviewer",
+      "content": "Okay, Anand,  you mentioned using phpMyAdmin with MySQL in the Digital Mall project.  Can you describe your experience with database design and normalization within that project, perhaps focusing on a specific table and how you ensured data integrity?\n",
+      "timestamp": 1755869853.7101462
+    },
+    {
+      "role": "interviewer",
+      "content": "Anand, thank you so much for taking the time to speak with me today. I've truly enjoyed learning more about your experience and skills, and I found our conversation very insightful.  The team will be reviewing all applications, and we will be in touch regarding next steps in the coming days.  Regardless of the outcome, we appreciate you considering this opportunity with us.  Have a wonderful day.\n",
+      "timestamp": 1755869914.9523907
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "conversation": [
+    {
+      "role": "interviewer",
+      "content": "\"Hi Anand, thanks for coming in today.  It's great to finally meet you. I've reviewed your resume and I'm particularly impressed with your projects, especially the Digital Mall application \u2013 building a system with Java and MySQL demonstrates some solid backend skills.  I also noticed your frontend experience with HTML, CSS, and JavaScript, showcased in GameZork.\n\nTo get us started, could you please tell me a little bit about yourself, your background, and what interests you most in the field of software development?\"\n",
+      "timestamp": 1755872469.4169471
+    },
+    {
+      "role": "candidate",
+      "content": "start interview",
+      "timestamp": 1755872498.6131132
+    },
+    {
+      "role": "interviewer",
+      "content": "Your Digital Mall project mentions using Java and MySQL. Can you describe a specific challenge you faced during its development, how you approached solving it, and what you learned from the experience?\n",
+      "timestamp": 1755872500.8474605
+    },
+    {
+      "role": "candidate",
+      "content": "there are many challenges that I have faced while working on this project",
+      "timestamp": 1755872523.1126626
+    },
+    {
+      "role": "interviewer",
+      "content": "Okay, Anand, you mentioned facing many challenges during the Digital Mall project.  Can you describe one specific challenge in detail, focusing on the technical aspects?  What was the root cause of the problem, and what steps did you take to debug and resolve it?\n",
+      "timestamp": 1755872527.62286
+    },
+    {
+      "role": "candidate",
+      "content": "hggh",
+      "timestamp": 1755872548.686384
+    },
+    {
+      "role": "interviewer",
+      "content": "Okay, Anand,  let's try to understand this better.  You mentioned \"hggh\" which isn't very descriptive. Can you try again to explain a specific technical challenge you faced in the Digital Mall project, focusing on the problem, your troubleshooting steps, and the final solution?  Even a seemingly small issue can reveal a lot about your problem-solving approach.\n",
+      "timestamp": 1755872572.9629073
+    },
+    {
+      "role": "candidate",
+      "content": "k",
+      "timestamp": 1755872665.7010133
+    },
+    {
+      "role": "interviewer",
+      "content": "Anand, thank you so much for taking the time to speak with me today.  I've gained valuable insights into your experience and skills, and I appreciate you sharing your background with us.  The team will be reviewing all applications, and we will be in touch regarding the next steps in the hiring process.  We wish you all the best.\n",
+      "timestamp": 1755872668.070378
+    },
+    {
+      "role": "interviewer",
+      "content": "Okay, Anand,  let's move on from the Digital Mall project for a moment.  Your resume lists several front-end technologies like HTML, CSS, JavaScript, React, Bootstrap, and Tailwind.  Considering your GameZork project utilized HTML, CSS, and JavaScript, can you describe a situation where you had to choose between using different front-end frameworks or libraries (like Bootstrap or Tailwind) for a specific task or feature, and what factors influenced your decision?\n",
+      "timestamp": 1755872668.644763
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "conversation": [
+    {
+      "role": "interviewer",
+      "content": "\"Hi Anand, welcome! It's great to meet you. Thanks for taking the time to interview with us today.  I've reviewed your resume and am particularly impressed with your projects, especially the Java-based Digital Mall and the GameZork platform.  Your skills in Java, React, and several other technologies seem quite impressive for a recent graduate.\n\nTo start, could you please tell me a little about yourself, your background, and what aspects of software development most interest you?\"\n",
+      "timestamp": 1755871628.2417974
+    },
+    {
+      "role": "interviewer",
+      "content": "Anand, thank you so much for taking the time to speak with me today.  I've gained valuable insights into your experience and skills, and I appreciate you sharing your background with us.  The team will be reviewing all applications, and we will be in touch to let you know the next steps in the process.  We wish you all the best.\n",
+      "timestamp": 1755871639.5116084
+    }
+  ]
+}

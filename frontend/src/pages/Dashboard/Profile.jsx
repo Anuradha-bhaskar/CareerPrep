@@ -1,8 +1,38 @@
 import React from "react";
 import { useUser } from "@clerk/clerk-react";
+import { useAuth } from "@clerk/clerk-react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 export default function Profile() {
   const { isLoaded, isSignedIn, user } = useUser();
+  const { getToken } = useAuth();
+
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState(null);
+  const [interviews, setInterviews] = useState([]);
+
+  useEffect(() => {
+    const loadHistory = async () => {
+      if (!isSignedIn) return;
+      setHistoryLoading(true);
+      setHistoryError(null);
+      try {
+        const token = await getToken();
+        const r = await fetch("http://localhost:8000/api/practice/interview-history", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!r.ok) throw new Error("Failed to load interview history");
+        const data = await r.json();
+        setInterviews(Array.isArray(data?.interviews) ? data.interviews : []);
+      } catch (e) {
+        setHistoryError(e.message || "Could not load interview history");
+      } finally {
+        setHistoryLoading(false);
+      }
+    };
+    loadHistory();
+  }, [isSignedIn, getToken]);
 
   if (!isLoaded) {
     return (
@@ -40,6 +70,7 @@ export default function Profile() {
           <div className="text-gray-500 text-sm mt-1">User</div>
         </div>
       </div>
+
     </div>
   );
 }

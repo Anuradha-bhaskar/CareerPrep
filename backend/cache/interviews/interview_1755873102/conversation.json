@@ -1,0 +1,9 @@
+{
+  "conversation": [
+    {
+      "role": "interviewer",
+      "content": "Hi Anand, welcome! It's great to finally meet you.  Thanks for taking the time to interview today.  I reviewed your resume and was particularly impressed by your projects, especially the Java-based Digital Mall system and the GameZork platform \u2013 it shows a nice range of skills.  I see you're a recent graduate with a strong foundation in both backend and frontend development.\n\nTo get started, could you please tell me a little about yourself, your background, and what kind of roles you\u2019re interested in pursuing?\n",
+      "timestamp": 1755873105.4863615
+    }
+  ]
+}
